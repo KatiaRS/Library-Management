@@ -22,9 +22,8 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter")
 	implementation("org.jetbrains.kotlin:kotlin-reflect")
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
-	implementation("org.springframework:spring-web:6.0.12")
-	implementation("org.springframework.data:spring-data-jpa:3.1.4")
-	implementation("com.h2database:h2")
+	implementation("org.springframework.boot:spring-boot-starter-web")
+	runtimeOnly("com.h2database:h2")
 	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
 
 }
