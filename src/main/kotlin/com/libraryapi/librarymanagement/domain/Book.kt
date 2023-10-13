@@ -15,10 +15,18 @@ data class Book(
     @Id
     @GeneratedValue
     var id:UUID? = null,
+
+    @Column(unique = true, length = 255)
     val title: String = "",
+
+    @Column(length = 255)
     val author: String = "",
+
+    @Column(unique = true)
     val isbn: String = ""
-)
+) {
+
+}
 
 
 
