@@ -24,9 +24,7 @@ data class Book(
 
     @Column(unique = true)
     val isbn: String = ""
-) {
-
-}
+)
 
 
 

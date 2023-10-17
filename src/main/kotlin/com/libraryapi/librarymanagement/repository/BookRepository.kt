@@ -10,8 +10,8 @@ import java.util.*
 interface BookRepository: JpaRepository<Book, UUID> {
     fun findByTitle(title: String): Book?
     fun findByAuthor(author: String): List<Book>?
-    fun findByIsbn(isbn: String): Book?
-    abstract fun existsByIsbnOrTitle(isbn: String, title: String): Boolean
+    fun findByIsbn(isbn: String):Book?
+    fun existsByIsbnOrTitle(isbn: String, title: String): Boolean
 
 
 }

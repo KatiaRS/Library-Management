@@ -12,8 +12,6 @@ import java.util.*
 class BookController(private val repository: BookRepository) {
 
     @PostMapping()
-    @ResponseStatus(HttpStatus.OK)
-
     fun create(@RequestBody book: Book): ResponseEntity<Book> {
         if (repository.existsByIsbnOrTitle(book.isbn, book.title)) {
             return ResponseEntity<Book>(HttpStatus.BAD_REQUEST)
@@ -39,7 +37,7 @@ class BookController(private val repository: BookRepository) {
     @GetMapping(params = ["isbn"])
     fun getByIsbn(@RequestParam isbn: String): ResponseEntity<Book> {
         val bookIsbn = repository.findByIsbn(isbn)
-        if (bookIsbn != null) {
+        if (bookIsbn != null){
             return ResponseEntity.ok(bookIsbn)
         }
         return ResponseEntity<Book>(HttpStatus.NOT_FOUND)
