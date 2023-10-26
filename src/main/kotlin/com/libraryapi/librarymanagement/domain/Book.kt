@@ -1,28 +1,25 @@
 package com.libraryapi.librarymanagement.domain
 
-import jakarta.persistence.Column
-import jakarta.persistence.Entity
-import jakarta.persistence.GeneratedValue
-import jakarta.persistence.GenerationType
-import jakarta.persistence.Id
-import jakarta.persistence.OneToMany
-import jakarta.persistence.Table
-import java.util.UUID
+import jakarta.persistence.*
+import jakarta.validation.constraints.Size
+import java.util.*
+import kotlin.math.min
 
 @Entity
 @Table
 data class Book(
     @Id
     @GeneratedValue
-    var id:UUID? = null,
+    var id: UUID? = null,
 
-    @Column(unique = true, length = 255)
+    @Column(unique = true, length = 255, nullable = false)
     val title: String = "",
 
-    @Column(length = 255)
+    @Column(length = 255, nullable = false)
     val author: String = "",
 
-    @Column(unique = true)
+    @Column(unique = true, nullable = false)
+    @Size(min = 10, max = 13)
     val isbn: String = ""
 )
 

@@ -25,6 +25,8 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-web")
 	runtimeOnly("com.h2database:h2")
 	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+	testImplementation("org.springframework.security:spring-security-test:6.1.5")
+	implementation("jakarta.validation:jakarta.validation-api:3.0.2")
 
 }
 
