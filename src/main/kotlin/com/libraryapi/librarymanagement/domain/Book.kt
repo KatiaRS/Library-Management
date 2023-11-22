@@ -2,6 +2,7 @@ package com.libraryapi.librarymanagement.domain
 
 import jakarta.persistence.*
 import jakarta.validation.constraints.Size
+import org.hibernate.validator.constraints.Length
 import java.util.*
 import kotlin.math.min
 
@@ -9,19 +10,18 @@ import kotlin.math.min
 @Table
 data class Book(
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.UUID)
     var id: UUID? = null,
 
     @Column(unique = true, length = 255, nullable = false)
-    val title: String = "",
+    var title: String = "",
 
     @Column(length = 255, nullable = false)
-    val author: String = "",
+    var author: String = "",
 
     @Column(unique = true, nullable = false)
-    @Size(min = 10, max = 13)
-    val isbn: String = ""
+    @field:Length(min = 10, max = 13)
+    var isbn: String = ""
 )
-
 
 
