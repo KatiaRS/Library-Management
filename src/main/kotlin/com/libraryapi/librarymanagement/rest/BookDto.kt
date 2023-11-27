@@ -3,7 +3,6 @@ package com.libraryapi.librarymanagement.rest
 import com.libraryapi.librarymanagement.domain.Book
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.Size
-import java.util.*
 
 const val BOOK_PREFIX = "BOOK_"
 data class BookDto(
@@ -35,6 +34,3 @@ fun Book.toDto(): BookDto = BookDto(
     author = this.author,
     isbn = this.isbn
 )
-
-
-

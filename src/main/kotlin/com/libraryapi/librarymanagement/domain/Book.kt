@@ -1,10 +1,13 @@
 package com.libraryapi.librarymanagement.domain
 
-import jakarta.persistence.*
-import jakarta.validation.constraints.Size
+import jakarta.persistence.Column
+import jakarta.persistence.Entity
+import jakarta.persistence.GeneratedValue
+import jakarta.persistence.GenerationType
+import jakarta.persistence.Id
+import jakarta.persistence.Table
 import org.hibernate.validator.constraints.Length
-import java.util.*
-import kotlin.math.min
+import java.util.UUID
 
 @Entity
 @Table
@@ -23,5 +26,3 @@ data class Book(
     @field:Length(min = 10, max = 13)
     var isbn: String = ""
 )
-
-

@@ -8,6 +8,3 @@ spring:
   jpa:
     generate-ddl: true
     show-sql: true
-    logging:
-      level:
-        org.springframework.data.jpa: DEBUG

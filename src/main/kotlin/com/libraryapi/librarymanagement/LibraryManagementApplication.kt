@@ -7,6 +7,5 @@ import org.springframework.boot.runApplication
 class LibraryManagementApplication
 
 fun main(args: Array<String>) {
-	runApplication<LibraryManagementApplication>(*args)
+    runApplication<LibraryManagementApplication>(*args)
 }
-
