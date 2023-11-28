@@ -5,28 +5,24 @@ import jakarta.persistence.Entity
 import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
-import jakarta.persistence.OneToMany
 import jakarta.persistence.Table
+import org.hibernate.validator.constraints.Length
 import java.util.UUID
 
 @Entity
 @Table
 data class Book(
     @Id
-    @GeneratedValue
-    var id:UUID? = null,
+    @GeneratedValue(strategy = GenerationType.UUID)
+    var id: UUID? = null,
 
-    @Column(unique = true, length = 255)
-    val title: String = "",
+    @Column(unique = true, length = 255, nullable = false)
+    var title: String = "",
 
-    @Column(length = 255)
-    val author: String = "",
+    @Column(length = 255, nullable = false)
+    var author: String = "",
 
-    @Column(unique = true)
-    val isbn: String = ""
-) {
-
-}
-
-
-
+    @Column(unique = true, nullable = false)
+    @field:Length(min = 10, max = 13)
+    var isbn: String = ""
+)

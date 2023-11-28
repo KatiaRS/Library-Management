@@ -6,16 +6,5 @@ spring:
     url: jdbc:h2:mem:Book
     driver-class-name: org.h2.Driver
   jpa:
-    generate-ddl: false
-
-#spring:
-#  h2:
-#    spring.h2.console.enabled: true
-#    spring.h2.console.path: /h2-console
-#  datasource:
-#    url: jdbc:h2:mem:mydb
-#    username: sa
-#    password: password
-#    driverClassName: org.h2.Driver
-#  jpa:
-#    spring.jpa.database-platform: org.hibernate.dialect.H2Dialect
+    generate-ddl: true
+    show-sql: true
