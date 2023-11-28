@@ -14,7 +14,7 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 class ExceptionHandler : ResponseEntityExceptionHandler() {
 
     @ExceptionHandler(Exception::class)
-    fun handleUnscathedException(e: Exception, request: WebRequest): ResponseEntity<Any>? {
+    fun handleUncatchedException(e: Exception, request: WebRequest): ResponseEntity<Any>? {
         return handleExceptionInternal(e, HttpStatus.INTERNAL_SERVER_ERROR, request)
     }
 
