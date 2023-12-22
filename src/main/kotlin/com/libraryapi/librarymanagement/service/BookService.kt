@@ -1,62 +1,69 @@
 package com.libraryapi.librarymanagement.service
 
 import com.libraryapi.librarymanagement.domain.Book
-import com.libraryapi.librarymanagement.domain.BookAlreadyExistsException
-import com.libraryapi.librarymanagement.domain.BookNotFoundException
+import com.libraryapi.librarymanagement.domain.Copy
+import com.libraryapi.librarymanagement.exception.BookAlreadyExistsException
+import com.libraryapi.librarymanagement.exception.BookNotFoundException
 import com.libraryapi.librarymanagement.repository.BookRepository
+import com.libraryapi.librarymanagement.repository.CopyRepository
 import org.springframework.stereotype.Service
-import java.util.UUID
+import java.util.*
 
 @Service
-class BookService(private val repository: BookRepository) {
+class BookService(
+    private val bookRepository: BookRepository,
+    private val copyRepository: CopyRepository
+) {
 
     fun create(book: Book): Book {
-        if (repository.existsByIsbnOrTitle(book.isbn, book.title)) {
+        if (bookRepository.existsByIsbnOrTitle(book.isbn, book.title)) {
             throw BookAlreadyExistsException()
         }
-
-        return repository.save(book)
+        return bookRepository.save(book).also {
+            copyRepository.save(Copy(book = it))
+        }
     }
 
-    fun getAll(): List<Book> = repository.findAll()
+    fun addCopy(id: UUID): Copy {
+        return copyRepository.save(Copy(book = getById(id)))
+    }
+
+    fun getAll(): List<Book> {
+        return bookRepository.findAll()
+    }
 
     fun getById(id: UUID): Book {
-        return repository.findById(id).orElseThrow {
+        return bookRepository.findById(id).orElseThrow {
             throw BookNotFoundException()
         }
     }
 
     fun getByIsbn(isbn: String): Book {
-        return repository.findByIsbn(isbn) ?: throw BookNotFoundException()
+        return bookRepository.findByIsbn(isbn) ?: throw BookNotFoundException()
     }
 
     fun getByTitle(title: String): Book {
-        return repository.findByTitle(title) ?: throw BookNotFoundException()
+        return bookRepository.findByTitle(title) ?: throw BookNotFoundException()
     }
 
     fun getByAuthor(author: String): List<Book> {
-        val bookAuthor = repository.findByAuthor(author)
-        if (bookAuthor.isNullOrEmpty()) {
+        val bookAuthor = bookRepository.findByAuthor(author)
+        if (bookAuthor.isEmpty()) {
             throw BookNotFoundException()
         }
-        return repository.findByAuthor(author)
+        return bookAuthor
     }
 
     fun deleteById(id: UUID) {
-        if (!repository.existsById(id)) {
-            throw BookNotFoundException()
-        }
-        repository.deleteById(id)
+        bookRepository.delete(getById(id))
     }
 
     fun updateById(id: UUID, updatedBook: Book): Book {
-        val updateBook = repository.findById(id).orElseThrow {
-            throw BookNotFoundException()
-        }
+        val updateBook = getById(id)
         updateBook.title = updatedBook.title
         updateBook.author = updatedBook.author
         updateBook.isbn = updatedBook.isbn
 
-        return repository.save(updateBook)
+        return bookRepository.save(updateBook)
     }
 }

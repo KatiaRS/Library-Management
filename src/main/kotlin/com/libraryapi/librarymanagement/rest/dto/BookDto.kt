@@ -1,4 +1,4 @@
-package com.libraryapi.librarymanagement.rest
+package com.libraryapi.librarymanagement.rest.dto
 
 import com.libraryapi.librarymanagement.domain.Book
 import jakarta.validation.constraints.NotBlank
@@ -26,7 +26,6 @@ fun BookDto.toEntity(): Book = Book(
     title = this.title!!,
     author = this.author!!,
     isbn = this.isbn!!
-
 )
 fun Book.toDto(): BookDto = BookDto(
     id = "$BOOK_PREFIX$id",
