@@ -1,7 +1,7 @@
 package com.libraryapi.librarymanagement.service
 
 import com.libraryapi.librarymanagement.domain.User
-import com.libraryapi.librarymanagement.exception.BookNotFoundException
+import com.libraryapi.librarymanagement.exception.DocumentCannotBeChangedException
 import com.libraryapi.librarymanagement.exception.UserAlreadyExistsException
 import com.libraryapi.librarymanagement.exception.UserNotFoundException
 import com.libraryapi.librarymanagement.repository.UserRepository
@@ -22,7 +22,7 @@ class UserService(private val userRepository: UserRepository) {
 
     fun getById(id: UUID): User {
         return userRepository.findById(id).orElseThrow {
-            throw BookNotFoundException()
+            throw UserNotFoundException()
         }
     }
 
@@ -30,17 +30,17 @@ class UserService(private val userRepository: UserRepository) {
         return userRepository.findByDocument(document) ?: throw UserNotFoundException()
     }
 
-    fun deleteById(idUser: UUID) {
-        userRepository.delete(getById(idUser))
+    fun deleteById(id: UUID) {
+        userRepository.delete(getById(id))
     }
 
-    fun updateById(idUser: UUID, updatedUser: User): User {
-        val updateUser = getById(idUser)
+    fun updateById(id: UUID, updatedUser: User): User {
+        val updateUser = getById(id)
         if (updatedUser.document != updateUser.document) {
-            throw UserAlreadyExistsException()
+            throw DocumentCannotBeChangedException()
         }
         updateUser.firstName = updatedUser.firstName
-        updatedUser.lastName = updatedUser.lastName
+        updateUser.lastName = updatedUser.lastName
 
         return userRepository.save(updateUser)
     }

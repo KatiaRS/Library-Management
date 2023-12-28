@@ -3,6 +3,7 @@ package com.libraryapi.librarymanagement.rest
 import com.libraryapi.librarymanagement.exception.BookAlreadyExistsException
 import com.libraryapi.librarymanagement.exception.BookNotFoundException
 import com.libraryapi.librarymanagement.exception.ConversionIdException
+import com.libraryapi.librarymanagement.exception.DocumentCannotBeChangedException
 import com.libraryapi.librarymanagement.exception.UserAlreadyExistsException
 import com.libraryapi.librarymanagement.exception.UserNotFoundException
 import org.springframework.http.HttpHeaders
@@ -44,6 +45,11 @@ class ExceptionHandler : ResponseEntityExceptionHandler() {
     @ExceptionHandler(UserNotFoundException::class)
     fun handleUserNotFoundException(e: UserNotFoundException, request: WebRequest): ResponseEntity<Any>? {
         return handleExceptionInternal(e, HttpStatus.NOT_FOUND, request)
+    }
+
+    @ExceptionHandler(DocumentCannotBeChangedException::class)
+    fun handleDocumentCannotBeChangedException(e: DocumentCannotBeChangedException, request: WebRequest): ResponseEntity<Any>? {
+        return handleExceptionInternal(e, HttpStatus.BAD_REQUEST, request)
     }
 
     private fun handleExceptionInternal(ex: Exception, status: HttpStatus, request: WebRequest): ResponseEntity<Any>? {

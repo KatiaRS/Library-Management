@@ -7,7 +7,7 @@ import org.hibernate.validator.constraints.br.CPF
 
 const val USER_PREFIX = "USER_"
 data class UserDto(
-    val idUser: String?,
+    val id: String?,
 
     @field:NotBlank
     @field:Size(max = 30)
@@ -22,15 +22,15 @@ data class UserDto(
     val document: String?
 )
 
-fun UserDto.toUser(): User = User(
-    idUser = null,
+fun UserDto.toEntity(): User = User(
+    id = null,
     firstName = this.firstName!!,
     lastName = this.lastName!!,
     document = this.document!!
 
 )
-fun User.toUserDto(): UserDto = UserDto(
-    idUser = "$USER_PREFIX$idUser",
+fun User.toDto(): UserDto = UserDto(
+    id = "$USER_PREFIX$id",
     firstName = this.firstName,
     lastName = this.lastName,
     document = this.document

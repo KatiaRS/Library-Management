@@ -14,7 +14,7 @@ import java.util.UUID
 data class User(
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    val idUser: UUID? = null,
+    val id: UUID? = null,
 
     @Column(nullable = false, length = 30)
     var firstName: String = "",

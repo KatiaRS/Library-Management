@@ -76,7 +76,7 @@ class BookControllerTest {
 
     @Test
     fun `should find a list of books`() {
-        // dado quando eu crio uma book
+        // Dado dois livros existentes
         val book1: Book = bookRepository.save(
             Book(
                 id = null,

@@ -5,7 +5,7 @@ import com.libraryapi.librarymanagement.domain.User
 import com.libraryapi.librarymanagement.repository.UserRepository
 import com.libraryapi.librarymanagement.rest.dto.USER_PREFIX
 import com.libraryapi.librarymanagement.rest.dto.UserDto
-import com.libraryapi.librarymanagement.rest.dto.toUser
+import com.libraryapi.librarymanagement.rest.dto.toEntity
 import org.hamcrest.Matchers
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
@@ -65,7 +65,7 @@ class UserControllerTest {
 
     @Test
     fun `should not create user and return 409`() {
-        val user: User = userRepository.save(builderUserDto().toUser())
+        val user: User = userRepository.save(builderUserDto().toEntity())
         val user2: UserDto = builderUserDto("Beatriz", "Andrade", user.document)
 
         mockMvc.post(URL) {
@@ -190,7 +190,7 @@ class UserControllerTest {
 
         val user1: User = userRepository.save(
             User(
-                idUser = null,
+                id = null,
                 firstName = "Katia",
                 lastName = "Santana",
                 document = "52701032067"
@@ -198,7 +198,7 @@ class UserControllerTest {
         )
         val user2: User = userRepository.save(
             User(
-                idUser = null,
+                id = null,
                 firstName = "Pedro",
                 lastName = "Souza",
                 document = "23357953099"
@@ -214,8 +214,8 @@ class UserControllerTest {
                 status { isOk() }
                 content {
                     jsonPath(
-                        "$[*].idUser",
-                        Matchers.containsInAnyOrder("$USER_PREFIX${user1.idUser}", "$USER_PREFIX${user2.idUser}")
+                        "$[*].id",
+                        Matchers.containsInAnyOrder("$USER_PREFIX${user1.id}", "$USER_PREFIX${user2.id}")
 
                     )
                     jsonPath("$[*].firstName", Matchers.containsInAnyOrder(user1.firstName, user2.firstName))
@@ -231,14 +231,14 @@ class UserControllerTest {
         val user: User = userRepository.save(User(null, "Karen Beatriz", "Santana", "06472583072"))
 
         // Quando eu faço um get
-        mockMvc.get("$URL/$USER_PREFIX${user.idUser}") {
+        mockMvc.get("$URL/$USER_PREFIX${user.id}") {
             contentType = MediaType.APPLICATION_JSON
         }
             // Então esperamos um status ok
             .andExpect {
                 status { isOk() }
                 content {
-                    MockMvcResultMatchers.jsonPath("$.idUser").value("$USER_PREFIX${user.idUser}")
+                    MockMvcResultMatchers.jsonPath("$.idUser").value("$USER_PREFIX${user.id}")
                     MockMvcResultMatchers.jsonPath("$.firstname").value(user.firstName)
                     MockMvcResultMatchers.jsonPath("$.lastname").value(user.lastName)
                     MockMvcResultMatchers.jsonPath("$.document").value(user.document)
@@ -279,7 +279,7 @@ class UserControllerTest {
             .andExpect {
                 status { isOk() }
                 content {
-                    MockMvcResultMatchers.jsonPath("$.idUser").value("$USER_PREFIX${user.idUser}")
+                    MockMvcResultMatchers.jsonPath("$.idUser").value("$USER_PREFIX${user.id}")
                     MockMvcResultMatchers.jsonPath("$.firstname").value(user.firstName)
                     MockMvcResultMatchers.jsonPath("$.lastname").value(user.lastName)
                     MockMvcResultMatchers.jsonPath("$.document").value(user.document)
@@ -309,11 +309,11 @@ class UserControllerTest {
     @Test
     fun `should update user`() {
         // Dado um usuário salvo no banco
-        val user: User = userRepository.save(builderUserDto().toUser())
+        val user: User = userRepository.save(builderUserDto().toEntity())
         val userUpdateDto: UserDto = builderUserUpdateDto()
 
         // Quando eu faço um put
-        mockMvc.put("$URL/$USER_PREFIX${user.idUser}") {
+        mockMvc.put("$URL/$USER_PREFIX${user.id}") {
             contentType = MediaType.APPLICATION_JSON
             content = objectMapper.writeValueAsString(userUpdateDto)
         }
@@ -321,7 +321,7 @@ class UserControllerTest {
             .andExpect {
                 status { isOk() }
                 content {
-                    MockMvcResultMatchers.jsonPath("$.idUser").value("$USER_PREFIX${user.idUser}")
+                    MockMvcResultMatchers.jsonPath("$.id").value("$USER_PREFIX${user.id}")
                     MockMvcResultMatchers.jsonPath("$.firstname").value(user.firstName)
                     MockMvcResultMatchers.jsonPath("$.lastname").value(user.lastName)
                     MockMvcResultMatchers.jsonPath("$.document").value(user.document)
@@ -372,10 +372,28 @@ class UserControllerTest {
     }
 
     @Test
-    fun `should delete User by id`() {
-        val user: User = userRepository.save(builderUserDto().toUser())
+    fun `should not update the user with changed document and return 400`() {
+        val user: User = userRepository.save(builderUserDto().toEntity())
+        val userUpdateDto: UserDto = builderUserUpdateDto(document = "39007924028")
 
-        mockMvc.delete("$URL/$USER_PREFIX${user.idUser}") {
+        mockMvc.put("$URL/$USER_PREFIX${user.id}") {
+            contentType = MediaType.APPLICATION_JSON
+            content = objectMapper.writeValueAsString(userUpdateDto)
+        }.andExpect {
+            status { isBadRequest() }
+            content {
+                MockMvcResultMatchers.jsonPath("$.title").value("Bad Request")
+                MockMvcResultMatchers.jsonPath("$.status").value(400)
+                MockMvcResultMatchers.jsonPath("$.detail").value("Document cannot be changed")
+            }
+        }
+    }
+
+    @Test
+    fun `should delete User by id`() {
+        val user: User = userRepository.save(builderUserDto().toEntity())
+
+        mockMvc.delete("$URL/$USER_PREFIX${user.id}") {
             contentType = MediaType.APPLICATION_JSON
         }
             // Então esperamos um status
@@ -426,7 +444,7 @@ private fun builderUserDto(
     lastName: String? = "Santana",
     document: String? = "52701032067"
 ) = UserDto(
-    idUser = null,
+    id = null,
     firstName = firstName,
     lastName = lastName,
     document = document
@@ -436,7 +454,7 @@ private fun builderUserUpdateDto(
     lastName: String? = "Santana",
     document: String? = "52701032067"
 ): UserDto = UserDto(
-    idUser = null,
+    id = null,
     firstName = firstName,
     lastName = lastName,
     document = document

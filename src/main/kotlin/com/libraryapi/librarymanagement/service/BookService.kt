@@ -47,11 +47,11 @@ class BookService(
     }
 
     fun getByAuthor(author: String): List<Book> {
-        val bookAuthor = bookRepository.findByAuthor(author)
-        if (bookAuthor.isEmpty()) {
+        val books = bookRepository.findByAuthor(author)
+        if (books.isEmpty()) {
             throw BookNotFoundException()
         }
-        return bookAuthor
+        return books
     }
 
     fun deleteById(id: UUID) {

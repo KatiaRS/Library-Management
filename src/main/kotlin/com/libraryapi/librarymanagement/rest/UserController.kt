@@ -3,8 +3,8 @@ package com.libraryapi.librarymanagement.rest
 import com.libraryapi.librarymanagement.exception.ConversionIdException
 import com.libraryapi.librarymanagement.rest.dto.USER_PREFIX
 import com.libraryapi.librarymanagement.rest.dto.UserDto
-import com.libraryapi.librarymanagement.rest.dto.toUser
-import com.libraryapi.librarymanagement.rest.dto.toUserDto
+import com.libraryapi.librarymanagement.rest.dto.toDto
+import com.libraryapi.librarymanagement.rest.dto.toEntity
 import com.libraryapi.librarymanagement.service.UserService
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
@@ -28,33 +28,33 @@ class UserController(private val userService: UserService) {
         @RequestBody @Valid
         userDto: UserDto
     ): UserDto {
-        return userService.create(userDto.toUser()).toUserDto()
+        return userService.create(userDto.toEntity()).toDto()
     }
 
     @GetMapping
-    fun getAll(): List<UserDto> = userService.getAll().map { it.toUserDto() }
+    fun getAll(): List<UserDto> = userService.getAll().map { it.toDto() }
 
-    @GetMapping("/{idUser}")
-    fun getById(@PathVariable idUser: String): UserDto {
-        return userService.getById(convertIdUser(idUser)).toUserDto()
+    @GetMapping("/{id}")
+    fun getById(@PathVariable id: String): UserDto {
+        return userService.getById(convertId(id)).toDto()
     }
 
     @GetMapping(params = ["document"])
     fun getByDocument(@RequestParam document: String): UserDto {
-        return userService.getByDocument(document)!!.toUserDto()
+        return userService.getByDocument(document)!!.toDto()
     }
 
-    @DeleteMapping("/{idUser}")
+    @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    fun deleteById(@PathVariable idUser: String) = userService.deleteById(convertIdUser(idUser))
+    fun deleteById(@PathVariable id: String) = userService.deleteById(convertId(id))
 
-    @PutMapping("/{idUser}")
-    fun updateById(@PathVariable idUser: String, @RequestBody @Valid userDto: UserDto): UserDto {
-        return userService.updateById(convertIdUser(idUser), userDto.toUser()).toUserDto()
+    @PutMapping("/{id}")
+    fun updateById(@PathVariable id: String, @RequestBody @Valid userDto: UserDto): UserDto {
+        return userService.updateById(convertId(id), userDto.toEntity()).toDto()
     }
 
-    private fun convertIdUser(idUser: String): UUID {
-        val noPrefixUser = idUser.removePrefix(USER_PREFIX)
+    private fun convertId(id: String): UUID {
+        val noPrefixUser = id.removePrefix(USER_PREFIX)
         try {
             return UUID.fromString(noPrefixUser)
         } catch (e: Exception) {
