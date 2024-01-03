@@ -3,7 +3,11 @@ package com.libraryapi.librarymanagement.rest
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.libraryapi.librarymanagement.domain.Book
 import com.libraryapi.librarymanagement.repository.BookRepository
-import org.hamcrest.Matchers.containsInAnyOrder
+import com.libraryapi.librarymanagement.repository.CopyRepository
+import com.libraryapi.librarymanagement.rest.dto.BOOK_PREFIX
+import com.libraryapi.librarymanagement.rest.dto.BookDto
+import com.libraryapi.librarymanagement.rest.dto.toEntity
+import org.hamcrest.Matchers
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -18,7 +22,7 @@ import org.springframework.test.web.servlet.get
 import org.springframework.test.web.servlet.post
 import org.springframework.test.web.servlet.put
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
-import java.util.UUID
+import java.util.*
 
 private const val URL = "/books"
 
@@ -34,36 +38,21 @@ class BookControllerTest {
     private lateinit var bookRepository: BookRepository
 
     @Autowired
+    private lateinit var copyRepository: CopyRepository
+
+    @Autowired
     private lateinit var objectMapper: ObjectMapper
 
     @BeforeEach
-    fun setup() = bookRepository.deleteAll() // limpa o banco de dados cada vez q for rodar
+    fun setup() {
+        copyRepository.deleteAll()
+        bookRepository.deleteAll() // limpa o banco de dados cada vez q for rodar
+    }
 
     @AfterEach
-    fun tearDown() = bookRepository.deleteAll() // limpa o banco de dados quando finaliza o teste
-
-    @Test
-    fun `should return all books`() {
-        // dado quando eu crio uma lista de books
-        // E salvo no banco
-
-        val book1: Book = bookRepository.save(Book(null, "Katia", "Luan Andrade", "123456789101"))
-        val book2: Book = bookRepository.save(Book(null, "O Sol", "Katia Santana", "123457635543"))
-
-        // Quando eu faço um get
-        mockMvc.get(URL) {
-            contentType = MediaType.APPLICATION_JSON
-        }
-            // Então esperamos um status ok
-            .andExpect {
-                status { isOk() }
-                content {
-                    jsonPath("$[*].id", containsInAnyOrder("$BOOK_PREFIX${book1.id}", "$BOOK_PREFIX${book2.id}"))
-                    jsonPath("$[*].author", containsInAnyOrder(book1.author, book2.author))
-                    jsonPath("$[*].isbn", containsInAnyOrder(book1.isbn, book2.isbn))
-                    jsonPath("$[*].title", containsInAnyOrder(book1.title, book2.title))
-                }
-            }
+    fun tearDown() {
+        copyRepository.deleteAll()
+        bookRepository.deleteAll() // limpa o banco de dados quando finaliza o teste
     }
 
     @Test
@@ -74,14 +63,85 @@ class BookControllerTest {
         mockMvc.post(URL) {
             contentType = MediaType.APPLICATION_JSON
             content = objectMapper.writeValueAsString(request)
+        }.andExpect {
+            status { isOk() }
+            content {
+                jsonPath("$.id").exists()
+                jsonPath("$.title").value(request.title)
+                jsonPath("$.author").value(request.author)
+                jsonPath("$.isbn").value(request.isbn)
+            }
         }
+    }
+
+    @Test
+    fun `should find a list of books`() {
+        // Dado dois livros existentes
+        val book1: Book = bookRepository.save(
+            Book(
+                id = null,
+                title = "As princesas",
+                author = "Luan Santana",
+                isbn = "12345678910"
+            )
+        )
+
+        val book2: Book = bookRepository.save(
+            Book(
+                id = null,
+                title = "O Sol",
+                author = "Karen Andrade",
+                isbn = "9090976544383"
+            )
+        )
+        // Quando eu faço um get
+        mockMvc.get(URL) {
+            contentType = MediaType.APPLICATION_JSON
+        }
+            // Então esperamos um status ok
             .andExpect {
                 status { isOk() }
                 content {
-                    jsonPath("$.id").exists()
-                    jsonPath("$.title").value(request.title)
-                    jsonPath("$.author").value(request.author)
-                    jsonPath("$.isbn").value(request.isbn)
+                    jsonPath(
+                        "$[*].id",
+                        Matchers.containsInAnyOrder("${BOOK_PREFIX}${book1.id}", "${BOOK_PREFIX}${book2.id}")
+
+                    )
+                    jsonPath("$[*].title", Matchers.containsInAnyOrder(book1.title, book2.title))
+                    jsonPath("$[*].author", Matchers.containsInAnyOrder(book1.author, book2.author))
+                    jsonPath("$[*].isbn", Matchers.containsInAnyOrder(book1.isbn, book2.isbn))
+                }
+            }
+    }
+
+    @Test
+    fun `should create a copy of the book`() {
+        // Dado um livro existente
+        val book: Book = bookRepository.save(builderBookDto().toEntity())
+
+        // Quando uma cópia do livro é criada
+        mockMvc.post("$URL/$BOOK_PREFIX${book.id}/copy").andExpect {
+            status { isNoContent() }
+        }
+    }
+
+    @Test
+    fun `should not add a book copy with invalid ID and return 400`() {
+        val invalidId: String = "Teste"
+        val copyBook: BookDto = builderBookUpdateDto()
+
+        // Quando eu faço um get
+        mockMvc.post("$URL/$invalidId/copy") {
+            contentType = MediaType.APPLICATION_JSON
+            content = objectMapper.writeValueAsString(copyBook)
+        }
+            // Então esperamos um status
+            .andExpect {
+                status { isBadRequest() }
+                content {
+                    jsonPath("$.title").value("Bad Request")
+                    jsonPath("$.status").value(400)
+                    jsonPath("$.detail").value("Invalid Id")
                 }
             }
     }
@@ -93,15 +153,14 @@ class BookControllerTest {
         mockMvc.post(URL) {
             contentType = MediaType.APPLICATION_JSON
             content = objectMapper.writeValueAsString(request)
-        }
-            .andExpect {
-                status { isBadRequest() }
-                content {
-                    jsonPath("$.title").value("Bad Request")
-                    jsonPath("$.status").value(400)
-                    jsonPath("$.detail").value("Invalid request content.")
-                }
+        }.andExpect {
+            status { isBadRequest() }
+            content {
+                jsonPath("$.title").value("Bad Request")
+                jsonPath("$.status").value(400)
+                jsonPath("$.detail").value("Invalid request content.")
             }
+        }
     }
 
     @Test
@@ -111,15 +170,14 @@ class BookControllerTest {
         mockMvc.post(URL) {
             contentType = MediaType.APPLICATION_JSON
             content = objectMapper.writeValueAsString(request)
-        }
-            .andExpect {
-                status { isBadRequest() }
-                content {
-                    jsonPath("$.title").value("Bad Request")
-                    jsonPath("$.status").value(400)
-                    jsonPath("$.detail").value("Invalid request content.")
-                }
+        }.andExpect {
+            status { isBadRequest() }
+            content {
+                jsonPath("$.title").value("Bad Request")
+                jsonPath("$.status").value(400)
+                jsonPath("$.detail").value("Invalid request content.")
             }
+        }
     }
 
     @Test
@@ -129,15 +187,14 @@ class BookControllerTest {
         mockMvc.post(URL) {
             contentType = MediaType.APPLICATION_JSON
             content = objectMapper.writeValueAsString(request)
-        }
-            .andExpect {
-                status { isBadRequest() }
-                content {
-                    jsonPath("$.title").value("Bad Request")
-                    jsonPath("$.status").value(400)
-                    jsonPath("$.detail").value("Invalid request content.")
-                }
+        }.andExpect {
+            status { isBadRequest() }
+            content {
+                jsonPath("$.title").value("Bad Request")
+                jsonPath("$.status").value(400)
+                jsonPath("$.detail").value("Invalid request content.")
             }
+        }
     }
 
     @Test
@@ -147,15 +204,14 @@ class BookControllerTest {
         mockMvc.post(URL) {
             contentType = MediaType.APPLICATION_JSON
             content = objectMapper.writeValueAsString(request)
-        }
-            .andExpect {
-                status { isBadRequest() }
-                content {
-                    jsonPath("$.title").value("Bad Request")
-                    jsonPath("$.status").value(400)
-                    jsonPath("$.detail").value("Invalid request content.")
-                }
+        }.andExpect {
+            status { isBadRequest() }
+            content {
+                jsonPath("$.title").value("Bad Request")
+                jsonPath("$.status").value(400)
+                jsonPath("$.detail").value("Invalid request content.")
             }
+        }
     }
 
     @Test
@@ -165,15 +221,14 @@ class BookControllerTest {
         mockMvc.post(URL) {
             contentType = MediaType.APPLICATION_JSON
             content = objectMapper.writeValueAsString(request)
-        }
-            .andExpect {
-                status { isBadRequest() }
-                content {
-                    jsonPath("$.title").value("Bad Request")
-                    jsonPath("$.status").value(400)
-                    jsonPath("$.detail").value("Invalid request content.")
-                }
+        }.andExpect {
+            status { isBadRequest() }
+            content {
+                jsonPath("$.title").value("Bad Request")
+                jsonPath("$.status").value(400)
+                jsonPath("$.detail").value("Invalid request content.")
             }
+        }
     }
 
     @Test
@@ -183,15 +238,14 @@ class BookControllerTest {
         mockMvc.post(URL) {
             contentType = MediaType.APPLICATION_JSON
             content = objectMapper.writeValueAsString(request)
-        }
-            .andExpect {
-                status { isBadRequest() }
-                content {
-                    jsonPath("$.title").value("Bad Request")
-                    jsonPath("$.status").value(400)
-                    jsonPath("$.detail").value("Invalid request content.")
-                }
+        }.andExpect {
+            status { isBadRequest() }
+            content {
+                jsonPath("$.title").value("Bad Request")
+                jsonPath("$.status").value(400)
+                jsonPath("$.detail").value("Invalid request content.")
             }
+        }
     }
 
     @Test
@@ -202,15 +256,14 @@ class BookControllerTest {
         mockMvc.post(URL) {
             contentType = MediaType.APPLICATION_JSON
             content = objectMapper.writeValueAsString(request)
-        }
-            .andExpect {
-                status { isBadRequest() }
-                content {
-                    jsonPath("$.title").value("Bad Request")
-                    jsonPath("$.status").value(400)
-                    jsonPath("$.detail").value("This book already exists")
-                }
+        }.andExpect {
+            status { isBadRequest() }
+            content {
+                jsonPath("$.title").value("Bad Request")
+                jsonPath("$.status").value(400)
+                jsonPath("$.detail").value("This book already exists")
             }
+        }
     }
 
     @Test
@@ -221,55 +274,50 @@ class BookControllerTest {
         mockMvc.post(URL) {
             contentType = MediaType.APPLICATION_JSON
             content = objectMapper.writeValueAsString(request)
-        }
-            .andExpect {
-                status { isBadRequest() }
-                content {
-                    jsonPath("$.title").value("Bad Request")
-                    jsonPath("$.status").value(400)
-                    jsonPath("$.detail").value("This book already exists")
-                }
+        }.andExpect {
+            status { isBadRequest() }
+            content {
+                jsonPath("$.title").value("Bad Request")
+                jsonPath("$.status").value(400)
+                jsonPath("$.detail").value("This book already exists")
             }
+        }
     }
 
     @Test
     fun `should not create a book with a title longer than 255 characters `() {
-        val titleLong = "a".repeat(255)
+        val titleLong = "a".repeat(256)
         val request: BookDto = builderBookDto(title = titleLong)
-        bookRepository.save(Book(null, request.title!!, "José Augusto", "1090923448469"))
 
         mockMvc.post(URL) {
             contentType = MediaType.APPLICATION_JSON
             content = objectMapper.writeValueAsString(request)
-        }
-            .andExpect {
-                status { isBadRequest() }
-                content {
-                    jsonPath("$.title").value("Bad Request")
-                    jsonPath("$.status").value(400)
-                    jsonPath("$.detail").value("Invalid request content.")
-                }
+        }.andExpect {
+            status { isBadRequest() }
+            content {
+                jsonPath("$.title").value("Bad Request")
+                jsonPath("$.status").value(400)
+                jsonPath("$.detail").value("Invalid request content.")
             }
+        }
     }
 
     @Test
     fun `should not create a book with a author longer than 255 characters `() {
-        val titleLong = "a".repeat(255)
+        val titleLong = "a".repeat(256)
         val request: BookDto = builderBookDto(author = titleLong)
-        bookRepository.save(Book(null, request.title!!, "José Augusto", "1090923448469"))
 
         mockMvc.post(URL) {
             contentType = MediaType.APPLICATION_JSON
             content = objectMapper.writeValueAsString(request)
-        }
-            .andExpect {
-                status { isBadRequest() }
-                content {
-                    jsonPath("$.title").value("Bad Request")
-                    jsonPath("$.status").value(400)
-                    jsonPath("$.detail").value("Invalid request content.")
-                }
+        }.andExpect {
+            status { isBadRequest() }
+            content {
+                jsonPath("$.title").value("Bad Request")
+                jsonPath("$.status").value(400)
+                jsonPath("$.detail").value("Invalid request content.")
             }
+        }
     }
 
     @Test
@@ -298,7 +346,7 @@ class BookControllerTest {
         val invalidId: String = "Teste"
 
         // Quando eu faço um get
-        mockMvc.put("$URL/$invalidId") {
+        mockMvc.get("$URL/$invalidId") {
             contentType = MediaType.APPLICATION_JSON
         }
             // Então esperamos um status

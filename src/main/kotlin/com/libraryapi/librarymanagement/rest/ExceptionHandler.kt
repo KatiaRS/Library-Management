@@ -1,7 +1,11 @@
 package com.libraryapi.librarymanagement.rest
 
-import com.libraryapi.librarymanagement.domain.BookAlreadyExistsException
-import com.libraryapi.librarymanagement.domain.BookNotFoundException
+import com.libraryapi.librarymanagement.exception.BookAlreadyExistsException
+import com.libraryapi.librarymanagement.exception.BookNotFoundException
+import com.libraryapi.librarymanagement.exception.ConversionIdException
+import com.libraryapi.librarymanagement.exception.DocumentCannotBeChangedException
+import com.libraryapi.librarymanagement.exception.UserAlreadyExistsException
+import com.libraryapi.librarymanagement.exception.UserNotFoundException
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -30,6 +34,21 @@ class ExceptionHandler : ResponseEntityExceptionHandler() {
 
     @ExceptionHandler(ConversionIdException::class)
     fun handleConversionIdException(e: ConversionIdException, request: WebRequest): ResponseEntity<Any>? {
+        return handleExceptionInternal(e, HttpStatus.BAD_REQUEST, request)
+    }
+
+    @ExceptionHandler(UserAlreadyExistsException::class)
+    fun handleUserAlreadyExistsException(e: UserAlreadyExistsException, request: WebRequest): ResponseEntity<Any>? {
+        return handleExceptionInternal(e, HttpStatus.CONFLICT, request)
+    }
+
+    @ExceptionHandler(UserNotFoundException::class)
+    fun handleUserNotFoundException(e: UserNotFoundException, request: WebRequest): ResponseEntity<Any>? {
+        return handleExceptionInternal(e, HttpStatus.NOT_FOUND, request)
+    }
+
+    @ExceptionHandler(DocumentCannotBeChangedException::class)
+    fun handleDocumentCannotBeChangedException(e: DocumentCannotBeChangedException, request: WebRequest): ResponseEntity<Any>? {
         return handleExceptionInternal(e, HttpStatus.BAD_REQUEST, request)
     }
 

@@ -1,6 +1,10 @@
 package com.libraryapi.librarymanagement.rest
 
-import com.libraryapi.librarymanagement.repository.BookRepository
+import com.libraryapi.librarymanagement.exception.ConversionIdException
+import com.libraryapi.librarymanagement.rest.dto.BOOK_PREFIX
+import com.libraryapi.librarymanagement.rest.dto.BookDto
+import com.libraryapi.librarymanagement.rest.dto.toDto
+import com.libraryapi.librarymanagement.rest.dto.toEntity
 import com.libraryapi.librarymanagement.service.BookService
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
@@ -14,11 +18,11 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
-import java.util.UUID
+import java.util.*
 
 @RestController
 @RequestMapping("/books")
-class BookController(private val bookService: BookService, private val bookRepository: BookRepository) {
+class BookController(private val bookService: BookService) {
 
     @PostMapping()
     fun create(
@@ -26,6 +30,12 @@ class BookController(private val bookService: BookService, private val bookRepos
         bookDto: BookDto
     ): BookDto {
         return bookService.create(bookDto.toEntity()).toDto()
+    }
+
+    @PostMapping("/{id}/copy")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    fun addCopy(@PathVariable id: String) {
+        bookService.addCopy(convertId(id))
     }
 
     @GetMapping
