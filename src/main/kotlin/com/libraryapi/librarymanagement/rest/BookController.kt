@@ -1,8 +1,9 @@
 package com.libraryapi.librarymanagement.rest
 
-import com.libraryapi.librarymanagement.exception.ConversionIdException
-import com.libraryapi.librarymanagement.rest.dto.BOOK_PREFIX
+import com.libraryapi.librarymanagement.domain.Copy
+import com.libraryapi.librarymanagement.repository.CopyRepository
 import com.libraryapi.librarymanagement.rest.dto.BookDto
+import com.libraryapi.librarymanagement.rest.dto.convertBookId
 import com.libraryapi.librarymanagement.rest.dto.toDto
 import com.libraryapi.librarymanagement.rest.dto.toEntity
 import com.libraryapi.librarymanagement.service.BookService
@@ -18,11 +19,13 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
-import java.util.*
 
 @RestController
 @RequestMapping("/books")
-class BookController(private val bookService: BookService) {
+class BookController(
+    private val bookService: BookService,
+    private val copyRepository: CopyRepository
+) {
 
     @PostMapping()
     fun create(
@@ -35,7 +38,12 @@ class BookController(private val bookService: BookService) {
     @PostMapping("/{id}/copy")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     fun addCopy(@PathVariable id: String) {
-        bookService.addCopy(convertId(id))
+        bookService.addCopy(convertBookId(id))
+    }
+
+    @GetMapping("/{id}/copies")
+    fun getAllCopy(@PathVariable id: String): List<Copy> {
+        return copyRepository.findByBookId(convertBookId(id))
     }
 
     @GetMapping
@@ -43,7 +51,7 @@ class BookController(private val bookService: BookService) {
 
     @GetMapping("/{id}")
     fun getById(@PathVariable id: String): BookDto {
-        return bookService.getById(convertId(id)).toDto()
+        return bookService.getById(convertBookId(id)).toDto()
     }
 
     @GetMapping(params = ["isbn"])
@@ -63,19 +71,10 @@ class BookController(private val bookService: BookService) {
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    fun deleteById(@PathVariable id: String) = bookService.deleteById(convertId(id))
+    fun deleteById(@PathVariable id: String) = bookService.deleteById(convertBookId(id))
 
     @PutMapping("/{id}")
     fun updateById(@PathVariable id: String, @RequestBody @Valid bookDto: BookDto): BookDto {
-        return bookService.updateById(convertId(id), bookDto.toEntity()).toDto()
-    }
-
-    private fun convertId(id: String): UUID {
-        val noPrefix = id.removePrefix(BOOK_PREFIX)
-        try {
-            return UUID.fromString(noPrefix)
-        } catch (e: Exception) {
-            throw ConversionIdException()
-        }
+        return bookService.updateById(convertBookId(id), bookDto.toEntity()).toDto()
     }
 }

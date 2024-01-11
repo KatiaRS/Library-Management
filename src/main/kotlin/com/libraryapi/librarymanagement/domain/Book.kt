@@ -25,4 +25,5 @@ data class Book(
     @Column(unique = true, nullable = false)
     @field:Length(min = 10, max = 13)
     var isbn: String = ""
+
 )

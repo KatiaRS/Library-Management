@@ -28,6 +28,10 @@ class BookService(
         return copyRepository.save(Copy(book = getById(id)))
     }
 
+    fun getAllCopy(id: Long): List<Copy> {
+        return copyRepository.findAll()
+    }
+
     fun getAll(): List<Book> {
         return bookRepository.findAll()
     }

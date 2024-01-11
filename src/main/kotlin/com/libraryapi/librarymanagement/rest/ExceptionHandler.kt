@@ -4,8 +4,10 @@ import com.libraryapi.librarymanagement.exception.BookAlreadyExistsException
 import com.libraryapi.librarymanagement.exception.BookNotFoundException
 import com.libraryapi.librarymanagement.exception.ConversionIdException
 import com.libraryapi.librarymanagement.exception.DocumentCannotBeChangedException
+import com.libraryapi.librarymanagement.exception.NoCopiesAvailableException
 import com.libraryapi.librarymanagement.exception.UserAlreadyExistsException
 import com.libraryapi.librarymanagement.exception.UserNotFoundException
+import com.libraryapi.librarymanagement.exception.UserReachedLoanLimitException
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -47,8 +49,18 @@ class ExceptionHandler : ResponseEntityExceptionHandler() {
         return handleExceptionInternal(e, HttpStatus.NOT_FOUND, request)
     }
 
+    @ExceptionHandler(NoCopiesAvailableException::class)
+    fun handleNoCopiesAvailableException(e: NoCopiesAvailableException, request: WebRequest): ResponseEntity<Any>? {
+        return handleExceptionInternal(e, HttpStatus.BAD_REQUEST, request)
+    }
+
     @ExceptionHandler(DocumentCannotBeChangedException::class)
     fun handleDocumentCannotBeChangedException(e: DocumentCannotBeChangedException, request: WebRequest): ResponseEntity<Any>? {
+        return handleExceptionInternal(e, HttpStatus.BAD_REQUEST, request)
+    }
+
+    @ExceptionHandler(UserReachedLoanLimitException::class)
+    fun handleUserReachedLoanLimitException(e: UserReachedLoanLimitException, request: WebRequest): ResponseEntity<Any>? {
         return handleExceptionInternal(e, HttpStatus.BAD_REQUEST, request)
     }
 
