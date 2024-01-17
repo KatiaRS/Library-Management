@@ -498,7 +498,7 @@ class BookControllerTest {
         val invalidId: UUID = UUID.randomUUID()
         val bookUpdateDto: BookDto = builderBookUpdateDto()
 
-        // Quando eu faço um get
+        // Quando eu faço um put
         mockMvc.put("$URL/$invalidId") {
             contentType = MediaType.APPLICATION_JSON
             content = objectMapper.writeValueAsString(bookUpdateDto)
@@ -586,18 +586,19 @@ class BookControllerTest {
     }
 }
 
-private fun builderBookDto(
+fun builderBookDto(
+    id: String? = null,
     title: String? = "A Lua",
     author: String? = "Katia Santana",
     isbn: String? = "123345678962"
 ) = BookDto(
-    id = null,
+    id = id,
     title = title,
     isbn = isbn,
     author = author
 )
 
-private fun builderBookUpdateDto(
+fun builderBookUpdateDto(
     title: String? = "Legião Urbana",
     author: String? = "Renato Russo",
     isbn: String? = "123345678963"

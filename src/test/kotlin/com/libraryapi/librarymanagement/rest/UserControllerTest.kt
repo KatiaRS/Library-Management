@@ -439,17 +439,18 @@ class UserControllerTest {
             }
     }
 }
-private fun builderUserDto(
+fun builderUserDto(
+    id: String? = null,
     firstName: String? = "Katia",
     lastName: String? = "Santana",
     document: String? = "52701032067"
 ) = UserDto(
-    id = null,
+    id = id,
     firstName = firstName,
     lastName = lastName,
     document = document
 )
-private fun builderUserUpdateDto(
+fun builderUserUpdateDto(
     firstName: String? = "Katia",
     lastName: String? = "Santana",
     document: String? = "52701032067"
