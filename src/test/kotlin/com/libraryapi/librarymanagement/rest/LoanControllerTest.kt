@@ -273,7 +273,7 @@ class LoanControllerTest {
             content {
                 MockMvcResultMatchers.jsonPath("$.title").value("Bad Request")
                 MockMvcResultMatchers.jsonPath("$.status").value(400)
-                MockMvcResultMatchers.jsonPath("$.detail").value("Invalid Id")
+                MockMvcResultMatchers.jsonPath("$.detail").value("This book has already been returned")
             }
         }
     }

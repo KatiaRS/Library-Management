@@ -40,10 +40,8 @@ class UserControllerTest {
     private lateinit var objectMapper: ObjectMapper
 
     @BeforeEach
-    fun setup() = userRepository.deleteAll()
-
     @AfterEach
-    fun tearDown() = userRepository.deleteAll()
+    fun setup() = userRepository.deleteAll()
 
     @Test
     fun `should create user`() {
