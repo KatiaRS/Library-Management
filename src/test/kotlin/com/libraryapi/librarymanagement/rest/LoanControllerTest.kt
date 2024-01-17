@@ -26,7 +26,6 @@ import org.springframework.test.web.servlet.post
 import org.springframework.test.web.servlet.put
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers
 import java.time.LocalDate
-import java.util.*
 
 private const val URL = "/loans"
 
