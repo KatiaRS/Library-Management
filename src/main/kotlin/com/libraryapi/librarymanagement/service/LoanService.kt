@@ -2,11 +2,14 @@ package com.libraryapi.librarymanagement.service
 
 import com.libraryapi.librarymanagement.domain.Copy
 import com.libraryapi.librarymanagement.domain.Loan
+import com.libraryapi.librarymanagement.exception.BookAlreadyBeenReturnedException
+import com.libraryapi.librarymanagement.exception.LoanNotFoundException
 import com.libraryapi.librarymanagement.exception.NoCopiesAvailableException
 import com.libraryapi.librarymanagement.exception.UserReachedLoanLimitException
 import com.libraryapi.librarymanagement.repository.CopyRepository
 import com.libraryapi.librarymanagement.repository.LoanRepository
 import org.springframework.stereotype.Service
+import java.time.LocalDate
 import java.util.*
 
 const val MAX_LOANS_PER_USER = 5
@@ -28,9 +31,26 @@ class LoanService(
 
         return loanRepository.save(loan)
     }
+
+    fun getById(id: UUID): Loan {
+        return loanRepository.findById(id).orElseThrow {
+            throw LoanNotFoundException()
+        }
+    }
+
+    fun devLoan(id: UUID): Loan {
+        val loan = getById(id)
+        if (loan.returnDate != null) {
+            throw BookAlreadyBeenReturnedException()
+        }
+        loan.returnDate = LocalDate.now()
+        return loanRepository.save(loan)
+    }
+
     private fun canBorrowMoreBooks(userId: UUID): Boolean {
         // Logica para verificar se o usuário poderá emprestar mais livros
-        // e se não tem multas ou empréstimos atrasados
+        // se tem mais de 5 empréstimos
+
         val activeLoans = loanRepository.countByUserIdAndReturnDateIsNull(userId)
         return activeLoans < MAX_LOANS_PER_USER
     }

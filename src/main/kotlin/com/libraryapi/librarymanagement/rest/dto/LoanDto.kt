@@ -19,9 +19,10 @@ data class LoanDto(
 
     @field:NotBlank
     val bookId: String?,
-    var issuedDate: LocalDate? = null,
-    var dueDate: LocalDate? = null,
-    var returnedDate: LocalDate? = null
+    var issuedDate: LocalDate? = LocalDate.now(),
+    var dueDate: LocalDate? = LocalDate.now().plusDays(15),
+    var returnDate: LocalDate? = null
+
 )
 
 fun LoanDto.toEntity(): Loan = Loan(
@@ -34,7 +35,9 @@ fun Loan.toDto(): LoanDto = LoanDto(
     userId = addUserPrefix(user.id!!),
     bookId = addBookPrefix(copy.book.id!!),
     issuedDate = this.issuedDate,
-    dueDate = this.dueDate
+    dueDate = this.dueDate,
+    returnDate = this.returnDate
+
 )
 fun convertLoanId(id: String): UUID {
     val noPrefix = id.removePrefix(LOAN_PREFIX)

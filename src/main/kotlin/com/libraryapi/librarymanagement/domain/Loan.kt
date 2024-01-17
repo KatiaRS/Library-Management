@@ -19,16 +19,16 @@ data class Loan(
 
     @ManyToOne()
     @JoinColumn(name = "user_id")
-    var user: User,
+    var user: User = User(),
 
     @ManyToOne()
     @JoinColumn(name = "copy_id")
-    var copy: Copy,
+    var copy: Copy = Copy(),
 
     val issuedDate: LocalDate = LocalDate.now(),
 
     val dueDate: LocalDate = LocalDate.now().plusDays(15),
 
-    val returnDate: LocalDate? = null
+    var returnDate: LocalDate? = null
 
 )
