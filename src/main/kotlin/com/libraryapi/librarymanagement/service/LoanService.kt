@@ -19,7 +19,8 @@ class LoanService(
     private val userService: UserService,
     private val copyRepository: CopyRepository,
     private val loanRepository: LoanRepository,
-    private val bookService: BookService
+    private val bookService: BookService,
+    private val fineService: FineService
 ) {
     fun create(loan: Loan): Loan {
         loan.user = userService.getById(loan.user.id!!)
@@ -38,13 +39,17 @@ class LoanService(
         }
     }
 
-    fun devLoan(id: UUID): Loan {
+    fun devLoan(id: UUID): Loan? {
         val loan = getById(id)
         if (loan.returnDate != null) {
             throw BookAlreadyBeenReturnedException()
         }
         loan.returnDate = LocalDate.now()
-        return loanRepository.save(loan)
+        return loanRepository.save(loan).also {
+            if (it.returnDate!!.isAfter(it.dueDate)) {
+                fineService.createFine(it)
+            }
+        }
     }
 
     private fun canBorrowMoreBooks(userId: UUID): Boolean {
@@ -58,7 +63,6 @@ class LoanService(
     private fun getCopyAvailable(bookId: UUID): Copy {
         // logica para verificar se há livros disponíveis para empréstimo
 
-        val book = bookService.getById(bookId)
         val copies = copyRepository.findAvailableCopies(bookId)
 
         if (copies.isEmpty()) {
