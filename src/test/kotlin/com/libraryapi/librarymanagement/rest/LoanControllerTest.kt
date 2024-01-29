@@ -5,6 +5,7 @@ import com.libraryapi.librarymanagement.domain.Copy
 import com.libraryapi.librarymanagement.domain.Loan
 import com.libraryapi.librarymanagement.repository.BookRepository
 import com.libraryapi.librarymanagement.repository.CopyRepository
+import com.libraryapi.librarymanagement.repository.FineRepository
 import com.libraryapi.librarymanagement.repository.LoanRepository
 import com.libraryapi.librarymanagement.repository.UserRepository
 import com.libraryapi.librarymanagement.rest.dto.BOOK_PREFIX
@@ -44,6 +45,9 @@ class LoanControllerTest {
     private lateinit var bookRepository: BookRepository
 
     @Autowired
+    private lateinit var fineRepository: FineRepository
+
+    @Autowired
     private lateinit var objectMapper: ObjectMapper
 
     @Autowired
@@ -55,6 +59,7 @@ class LoanControllerTest {
     @BeforeEach
     @AfterEach
     fun setup() {
+        fineRepository.deleteAll()
         loanRepository.deleteAll()
         copyRepository.deleteAll()
         bookRepository.deleteAll()
@@ -84,7 +89,7 @@ class LoanControllerTest {
         }
     }
 
-    @Test // testar conforme a regra de negocio
+    @Test
     fun `should not create loan  for unavailable book copy`() {
         val user = userRepository.save(builderUserDto().toEntity())
         val book = bookRepository.save(builderBookDto().toEntity())
@@ -175,13 +180,11 @@ class LoanControllerTest {
 
     @Test
     fun `should find loan by id `() {
-        // dado um loan salvo
         val user = userRepository.save(builderUserDto().toEntity())
         val book = bookRepository.save(builderBookDto().toEntity())
         val copy = copyRepository.save(Copy(book = book))
         val loan = loanRepository.save(Loan(user = user, copy = copy))
 
-        // quando faço um get pelo id do loan
         mockMvc.get("$URL/$LOAN_PREFIX${loan.id}") {
             contentType = MediaType.APPLICATION_JSON
         }.andExpect {
@@ -199,32 +202,27 @@ class LoanControllerTest {
 
     @Test
     fun `should not find loan with invalid id and return 400 `() {
-        // dado um id inválido
         val invalidIdLoan = "Teste"
 
         mockMvc.get("$URL/$invalidIdLoan") {
             contentType = MediaType.APPLICATION_JSON
-        }
-            // Então esperamos um status
-            .andExpect {
-                status { isBadRequest() }
-                content {
-                    MockMvcResultMatchers.jsonPath("$.title").value("Bad Request")
-                    MockMvcResultMatchers.jsonPath("$.status").value(400)
-                    MockMvcResultMatchers.jsonPath("$.detail").value("Loan not found")
-                }
+        }.andExpect {
+            status { isBadRequest() }
+            content {
+                MockMvcResultMatchers.jsonPath("$.title").value("Bad Request")
+                MockMvcResultMatchers.jsonPath("$.status").value(400)
+                MockMvcResultMatchers.jsonPath("$.detail").value("Loan not found")
             }
+        }
     }
 
     @Test
     fun `should return the book`() {
-        // dado um livro emprestado
         val user = userRepository.save(builderUserDto().toEntity())
         val book = bookRepository.save(builderBookDto().toEntity())
         val copy = copyRepository.save(Copy(book = book))
         val loan = loanRepository.save(Loan(user = user, copy = copy))
 
-        // quando eu faço um put, deve me retonrar OK
         mockMvc.put("$URL/$LOAN_PREFIX${loan.id}/devolution") {
             contentType = MediaType.APPLICATION_JSON
         }.andExpect {
@@ -236,6 +234,28 @@ class LoanControllerTest {
                 MockMvcResultMatchers.jsonPath("$.issuedDate").value(LocalDate.now())
                 MockMvcResultMatchers.jsonPath("$.dueDate").value(LocalDate.now().plusDays(15))
                 MockMvcResultMatchers.jsonPath("$.returnDate").value(LocalDate.now())
+            }
+        }
+    }
+
+    @Test
+    fun `should generate fine when loans is returned late`() {
+        val issueDate = LocalDate.now().minusDays(30)
+        val dueDate = LocalDate.now().minusDays(15)
+        val loan = createAndSaveLoan(issueDate = issueDate, dueDate = dueDate)
+
+        mockMvc.put("$URL/$LOAN_PREFIX${loan.id}/devolution") {
+            contentType = MediaType.APPLICATION_JSON
+        }.andExpect {
+            status { isOk() }
+            content {
+                MockMvcResultMatchers.jsonPath("$.id").exists()
+                MockMvcResultMatchers.jsonPath("$.userId").value(loan.user.id)
+                MockMvcResultMatchers.jsonPath("$.bookId").value(loan.copy.book.id)
+                MockMvcResultMatchers.jsonPath("$.issueDate").value(issueDate)
+                MockMvcResultMatchers.jsonPath("$.dueDate").value(dueDate)
+                MockMvcResultMatchers.jsonPath("$.returnDate").value(LocalDate.now())
+                MockMvcResultMatchers.jsonPath("$.fine").value(loan.fine)
             }
         }
     }
@@ -309,13 +329,25 @@ class LoanControllerTest {
             }
         }
     }
+
+    fun createAndSaveLoan(issueDate: LocalDate, dueDate: LocalDate): Loan {
+        val user = userRepository.save(builderUserDto().toEntity())
+        val book = bookRepository.save(builderBookDto().toEntity())
+        val copy = copyRepository.save(Copy(book = book))
+
+        val loan = Loan(
+            user = user,
+            copy = copy,
+            issueDate = issueDate,
+            dueDate = dueDate
+        )
+        return loanRepository.save(loan)
+    }
 }
 
 private fun builderLoanDto(
-
     userId: String? = "USER_b2c192bd-b2b2-4f4f-8fba-53ebfaa5fa01",
     bookId: String? = "BOOK_44953548-0c7e-42ea-b207-7983578ccafc"
-
 ) = LoanDto(
     userId = userId,
     bookId = bookId

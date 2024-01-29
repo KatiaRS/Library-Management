@@ -12,3 +12,6 @@ class UserReachedLoanLimitException : BusinessException("Loan limit reached by u
 class NoCopiesAvailableException : BusinessException("No books available")
 class LoanNotFoundException : EntityNotFoundException("Loan not found")
 class BookAlreadyBeenReturnedException : BusinessException("This book has already been returned")
+class FineNotFoundException : EntityNotFoundException("Fine not found")
+class FineAlreadyPaidException : BusinessException("Fine already paid")
+class UserHaveFineException : BusinessException("User has an outstanding fine")

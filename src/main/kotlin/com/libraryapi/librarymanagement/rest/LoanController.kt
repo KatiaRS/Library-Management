@@ -42,6 +42,6 @@ class LoanController(
 
     @PutMapping("/{id}/devolution")
     fun devLoan(@PathVariable id: String): LoanDto {
-        return loanService.devLoan(convertLoanId(id)).toDto()
+        return loanService.devLoan(convertLoanId(id))!!.toDto()
     }
 }

@@ -87,32 +87,27 @@ class BookControllerTest {
                 isbn = "9090976544383"
             )
         )
-        // Quando eu faço um get
         mockMvc.get(URL) {
             contentType = MediaType.APPLICATION_JSON
-        }
-            // Então esperamos um status ok
-            .andExpect {
-                status { isOk() }
-                content {
-                    jsonPath(
-                        "$[*].id",
-                        Matchers.containsInAnyOrder("${BOOK_PREFIX}${book1.id}", "${BOOK_PREFIX}${book2.id}")
+        }.andExpect {
+            status { isOk() }
+            content {
+                jsonPath(
+                    "$[*].id",
+                    Matchers.containsInAnyOrder("${BOOK_PREFIX}${book1.id}", "${BOOK_PREFIX}${book2.id}")
 
-                    )
-                    jsonPath("$[*].title", Matchers.containsInAnyOrder(book1.title, book2.title))
-                    jsonPath("$[*].author", Matchers.containsInAnyOrder(book1.author, book2.author))
-                    jsonPath("$[*].isbn", Matchers.containsInAnyOrder(book1.isbn, book2.isbn))
-                }
+                )
+                jsonPath("$[*].title", Matchers.containsInAnyOrder(book1.title, book2.title))
+                jsonPath("$[*].author", Matchers.containsInAnyOrder(book1.author, book2.author))
+                jsonPath("$[*].isbn", Matchers.containsInAnyOrder(book1.isbn, book2.isbn))
             }
+        }
     }
 
     @Test
     fun `should create a copy of the book`() {
-        // Dado um livro existente
         val book: Book = bookRepository.save(builderBookDto().toEntity())
 
-        // Quando uma cópia do livro é criada
         mockMvc.post("$URL/$BOOK_PREFIX${book.id}/copy").andExpect {
             status { isNoContent() }
         }
@@ -120,23 +115,20 @@ class BookControllerTest {
 
     @Test
     fun `should not add a book copy with invalid ID and return 400`() {
-        val invalidId: String = "Teste"
+        val invalidId = "Teste"
         val copyBook: BookDto = builderBookUpdateDto()
 
-        // Quando eu faço um get
         mockMvc.post("$URL/$invalidId/copy") {
             contentType = MediaType.APPLICATION_JSON
             content = objectMapper.writeValueAsString(copyBook)
-        }
-            // Então esperamos um status
-            .andExpect {
-                status { isBadRequest() }
-                content {
-                    jsonPath("$.title").value("Bad Request")
-                    jsonPath("$.status").value(400)
-                    jsonPath("$.detail").value("Invalid Id")
-                }
+        }.andExpect {
+            status { isBadRequest() }
+            content {
+                jsonPath("$.title").value("Bad Request")
+                jsonPath("$.status").value(400)
+                jsonPath("$.detail").value("Invalid Id")
             }
+        }
     }
 
     @Test
@@ -315,175 +307,151 @@ class BookControllerTest {
 
     @Test
     fun `should find book by id`() {
-        // Dado um livro salvo no banco
         val book: Book = bookRepository.save(Book(null, "A Estagiária", "Pag Bank", "0000000000000"))
 
-        // Quando eu faço um get
         mockMvc.get("$URL/$BOOK_PREFIX${book.id}") {
             contentType = MediaType.APPLICATION_JSON
-        }
-            // Então esperamos um status ok
-            .andExpect {
-                status { isOk() }
-                content {
-                    jsonPath("$.id").value("$BOOK_PREFIX${book.id}")
-                    jsonPath("$.author").value(book.author)
-                    jsonPath("$.isbn").value(book.isbn)
-                    jsonPath("$.title").value(book.title)
-                }
+        }.andExpect {
+            status { isOk() }
+            content {
+                jsonPath("$.id").value("$BOOK_PREFIX${book.id}")
+                jsonPath("$.author").value(book.author)
+                jsonPath("$.isbn").value(book.isbn)
+                jsonPath("$.title").value(book.title)
             }
+        }
     }
 
     @Test
     fun `should not find book with invalid id and return 400`() {
         val invalidId: String = "Teste"
 
-        // Quando eu faço um get
         mockMvc.get("$URL/$invalidId") {
             contentType = MediaType.APPLICATION_JSON
-        }
-            // Então esperamos um status
-            .andExpect {
-                status { isBadRequest() }
-                content {
-                    jsonPath("$.title").value("Bad Request")
-                    jsonPath("$.status").value(400)
-                    jsonPath("$.detail").value("Invalid Id")
-                }
+        }.andExpect {
+            status { isBadRequest() }
+            content {
+                jsonPath("$.title").value("Bad Request")
+                jsonPath("$.status").value(400)
+                jsonPath("$.detail").value("Invalid Id")
             }
+        }
     }
 
     @Test
     fun `should find book by Isbn`() {
-        // Dado um livro salvo no banco
         val book: Book = bookRepository.save(Book(null, "A Estagiária", "Pag Bank", "0000000000000"))
 
-        // Quando eu faço um get
         mockMvc.get(URL) {
             contentType = MediaType.APPLICATION_JSON
             param("isbn", book.isbn)
-        }
-            // Então esperamos um status ok
-            .andExpect {
-                status { isOk() }
-                content {
-                    jsonPath("$.id").value("$BOOK_PREFIX${book.id}")
-                    jsonPath("$.author").value(book.author)
-                    jsonPath("$.isbn").value(book.isbn)
-                    jsonPath("$.title").value(book.title)
-                }
+        }.andExpect {
+            status { isOk() }
+            content {
+                jsonPath("$.id").value("$BOOK_PREFIX${book.id}")
+                jsonPath("$.author").value(book.author)
+                jsonPath("$.isbn").value(book.isbn)
+                jsonPath("$.title").value(book.title)
             }
+        }
     }
 
     @Test
     fun `should find book by title`() {
-        // Dado um livro salvo no banco
         val book: Book = bookRepository.save(Book(null, "A Estagiária", "Pag Bank", "0000000000000"))
 
-        // Quando eu faço um get
         mockMvc.get(URL) {
             contentType = MediaType.APPLICATION_JSON
             param("title", book.title)
-        }
-            // Então esperamos um status ok
-            .andExpect {
-                status { isOk() }
-                content {
-                    jsonPath("$.id").value("$BOOK_PREFIX${book.id}")
-                    jsonPath("$.author").value(book.author)
-                    jsonPath("$.isbn").value(book.isbn)
-                    jsonPath("$.title").value(book.title)
-                }
+        }.andExpect {
+            status { isOk() }
+            content {
+                jsonPath("$.id").value("$BOOK_PREFIX${book.id}")
+                jsonPath("$.author").value(book.author)
+                jsonPath("$.isbn").value(book.isbn)
+                jsonPath("$.title").value(book.title)
             }
+        }
     }
 
     @Test
     fun `should find book by author`() {
-        // Dado um livro salvo no banco
-        val book: Book = bookRepository.save(Book(null, "A Estagiária", "Pag Bank", "0000000000000"))
+        val book: Book = bookRepository.save(
+            Book(
+                null,
+                "A Estagiária",
+                "Pag Bank",
+                "0000000000000"
+            )
+        )
 
-        // Quando eu faço um get
         mockMvc.get(URL) {
             contentType = MediaType.APPLICATION_JSON
             param("author", book.author)
-        }
-            // Então esperamos um status ok
-            .andExpect {
-                status { isOk() }
-                content {
-                    jsonPath("$.id").value("$BOOK_PREFIX${book.id}")
-                    jsonPath("$.author").value(book.author)
-                    jsonPath("$.isbn").value(book.isbn)
-                    jsonPath("$.title").value(book.title)
-                }
+        }.andExpect {
+            status { isOk() }
+            content {
+                jsonPath("$.id").value("$BOOK_PREFIX${book.id}")
+                jsonPath("$.author").value(book.author)
+                jsonPath("$.isbn").value(book.isbn)
+                jsonPath("$.title").value(book.title)
             }
+        }
     }
 
     @Test
     fun `should not find a book with an empty author`() {
-        // Dado um livro salvo no banco
         val book: Book = bookRepository.save(Book(null, "A Estagiária", "Pag Bank", "0000000000000"))
 
-        // Quando eu faço um get
         mockMvc.get(URL) {
             contentType = MediaType.APPLICATION_JSON
             param("author", "")
-        }
-            // Então esperamos um status ok
-            .andExpect {
-                status { isNotFound() }
-                content {
-                    jsonPath("$.id").value("$BOOK_PREFIX${book.id}")
-                    jsonPath("$.author").value(book.author)
-                    jsonPath("$.isbn").value(book.isbn)
-                    jsonPath("$.title").value(book.title)
-                }
+        }.andExpect {
+            status { isNotFound() }
+            content {
+                jsonPath("$.id").value("$BOOK_PREFIX${book.id}")
+                jsonPath("$.author").value(book.author)
+                jsonPath("$.isbn").value(book.isbn)
+                jsonPath("$.title").value(book.title)
             }
+        }
     }
 
     @Test
     fun `should not find a book with an null author`() {
-        // Dado um livro salvo no banco
         val book: Book = bookRepository.save(Book(null, "A Estagiária", "Pag Bank", "0000000000000"))
 
-        // Quando eu faço um get
         mockMvc.get(URL) {
             contentType = MediaType.APPLICATION_JSON
             param("author", null.toString())
-        }
-            // Então esperamos um status ok
-            .andExpect {
-                status { isNotFound() }
-                content {
-                    jsonPath("$.id").value("$BOOK_PREFIX${book.id}")
-                    jsonPath("$.author").value(book.author)
-                    jsonPath("$.isbn").value(book.isbn)
-                    jsonPath("$.title").value(book.title)
-                }
+        }.andExpect {
+            status { isNotFound() }
+            content {
+                jsonPath("$.id").value("$BOOK_PREFIX${book.id}")
+                jsonPath("$.author").value(book.author)
+                jsonPath("$.isbn").value(book.isbn)
+                jsonPath("$.title").value(book.title)
             }
+        }
     }
 
     @Test
     fun `should update Book`() {
-        // Dado um livro salvo no banco
         val book: Book = bookRepository.save(builderBookDto().toEntity())
         val bookUpdateDto: BookDto = builderBookUpdateDto()
 
-        // Quando eu faço um get
         mockMvc.put("$URL/$BOOK_PREFIX${book.id}") {
             contentType = MediaType.APPLICATION_JSON
             content = objectMapper.writeValueAsString(bookUpdateDto)
-        }
-            // Então esperamos um status ok
-            .andExpect {
-                status { isOk() }
-                content {
-                    jsonPath("$.id").value("$BOOK_PREFIX${bookUpdateDto.id}")
-                    jsonPath("$.author").value(bookUpdateDto.author)
-                    jsonPath("$.isbn").value(bookUpdateDto.isbn)
-                    jsonPath("$.title").value(bookUpdateDto.title)
-                }
+        }.andExpect {
+            status { isOk() }
+            content {
+                jsonPath("$.id").value("$BOOK_PREFIX${bookUpdateDto.id}")
+                jsonPath("$.author").value(bookUpdateDto.author)
+                jsonPath("$.isbn").value(bookUpdateDto.isbn)
+                jsonPath("$.title").value(bookUpdateDto.title)
             }
+        }
     }
 
     @Test
@@ -491,20 +459,17 @@ class BookControllerTest {
         val invalidId: UUID = UUID.randomUUID()
         val bookUpdateDto: BookDto = builderBookUpdateDto()
 
-        // Quando eu faço um put
         mockMvc.put("$URL/$invalidId") {
             contentType = MediaType.APPLICATION_JSON
             content = objectMapper.writeValueAsString(bookUpdateDto)
-        }
-            // Então esperamos um status
-            .andExpect {
-                status { isNotFound() }
-                content {
-                    jsonPath("$.title").value("Not Found")
-                    jsonPath("$.status").value(404)
-                    jsonPath("$.detail").value("Book not found")
-                }
+        }.andExpect {
+            status { isNotFound() }
+            content {
+                jsonPath("$.title").value("Not Found")
+                jsonPath("$.status").value(404)
+                jsonPath("$.detail").value("Book not found")
             }
+        }
     }
 
     @Test
@@ -512,20 +477,17 @@ class BookControllerTest {
         val invalidId: String = "Teste"
         val bookUpdateDto: BookDto = builderBookUpdateDto()
 
-        // Quando eu faço um get
         mockMvc.put("$URL/$invalidId") {
             contentType = MediaType.APPLICATION_JSON
             content = objectMapper.writeValueAsString(bookUpdateDto)
-        }
-            // Então esperamos um status
-            .andExpect {
-                status { isBadRequest() }
-                content {
-                    jsonPath("$.title").value("Bad Request")
-                    jsonPath("$.status").value(400)
-                    jsonPath("$.detail").value("Invalid Id")
-                }
+        }.andExpect {
+            status { isBadRequest() }
+            content {
+                jsonPath("$.title").value("Bad Request")
+                jsonPath("$.status").value(400)
+                jsonPath("$.detail").value("Invalid Id")
             }
+        }
     }
 
     @Test
@@ -535,7 +497,6 @@ class BookControllerTest {
         mockMvc.delete("$URL/$BOOK_PREFIX${book.id}") {
             contentType = MediaType.APPLICATION_JSON
         }
-            // Então esperamos um status
             .andExpect {
                 status { isNoContent() }
             }
@@ -547,35 +508,30 @@ class BookControllerTest {
 
         mockMvc.delete("$URL/$BOOK_PREFIX$invalidId") {
             contentType = MediaType.APPLICATION_JSON
-        }
-            // Então esperamos um status
-            .andExpect {
-                status { isNotFound() }
-                content {
-                    jsonPath("$.title").value("Not Found")
-                    jsonPath("$.status").value(404)
-                    jsonPath("$.detail").value("Book not found")
-                }
+        }.andExpect {
+            status { isNotFound() }
+            content {
+                jsonPath("$.title").value("Not Found")
+                jsonPath("$.status").value(404)
+                jsonPath("$.detail").value("Book not found")
             }
+        }
     }
 
     @Test
     fun `should not delete a book with a invalid id and return 400`() {
         val invalidId: String = "Teste"
 
-        // Quando eu faço um get
         mockMvc.delete("$URL/$invalidId") {
             contentType = MediaType.APPLICATION_JSON
-        }
-            // Então esperamos um status
-            .andExpect {
-                status { isBadRequest() }
-                content {
-                    jsonPath("$.title").value("Bad Request")
-                    jsonPath("$.status").value(400)
-                    jsonPath("$.detail").value("Invalid Id")
-                }
+        }.andExpect {
+            status { isBadRequest() }
+            content {
+                jsonPath("$.title").value("Bad Request")
+                jsonPath("$.status").value(400)
+                jsonPath("$.detail").value("Invalid Id")
             }
+        }
     }
 }
 

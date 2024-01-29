@@ -6,6 +6,7 @@ import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
+import jakarta.persistence.OneToOne
 import jakarta.persistence.Table
 import java.time.LocalDate
 import java.util.UUID
@@ -17,18 +18,22 @@ data class Loan(
     @GeneratedValue(strategy = GenerationType.UUID)
     val id: UUID? = null,
 
-    @ManyToOne()
+    @ManyToOne
     @JoinColumn(name = "user_id")
     var user: User = User(),
 
-    @ManyToOne()
+    @ManyToOne
     @JoinColumn(name = "copy_id")
     var copy: Copy = Copy(),
 
-    val issuedDate: LocalDate = LocalDate.now(),
+    val issueDate: LocalDate = LocalDate.now(),
 
     val dueDate: LocalDate = LocalDate.now().plusDays(15),
 
-    var returnDate: LocalDate? = null
+    var returnDate: LocalDate? = null,
+
+    @OneToOne
+    @JoinColumn(name = "fine_id")
+    var fine: Fine? = null
 
 )

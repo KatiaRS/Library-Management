@@ -1,9 +1,11 @@
 package com.libraryapi.librarymanagement.rest
 
+import com.libraryapi.librarymanagement.rest.dto.FineDto
 import com.libraryapi.librarymanagement.rest.dto.UserDto
 import com.libraryapi.librarymanagement.rest.dto.convertUserId
 import com.libraryapi.librarymanagement.rest.dto.toDto
 import com.libraryapi.librarymanagement.rest.dto.toEntity
+import com.libraryapi.librarymanagement.service.FineService
 import com.libraryapi.librarymanagement.service.UserService
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
@@ -20,7 +22,10 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping("/users")
-class UserController(private val userService: UserService) {
+class UserController(
+    private val userService: UserService,
+    private val fineService: FineService
+) {
     @PostMapping
     fun create(
         @RequestBody @Valid
@@ -35,6 +40,11 @@ class UserController(private val userService: UserService) {
     @GetMapping("/{id}")
     fun getById(@PathVariable id: String): UserDto {
         return userService.getById(convertUserId(id)).toDto()
+    }
+
+    @GetMapping("/{id}/fines")
+    fun getUserFines(@PathVariable id: String): List<FineDto> {
+        return fineService.getByUserId(convertUserId(id)).map { it.toDto() }
     }
 
     @GetMapping(params = ["document"])
