@@ -1,14 +1,11 @@
 package com.libraryapi.librarymanagement.rest
 
-import com.libraryapi.librarymanagement.domain.Fine
 import com.libraryapi.librarymanagement.exception.BusinessException
 import com.libraryapi.librarymanagement.exception.EntityNotFoundException
 import com.libraryapi.librarymanagement.rest.dto.LoanDto
-import com.libraryapi.librarymanagement.rest.dto.convertFineId
 import com.libraryapi.librarymanagement.rest.dto.convertLoanId
 import com.libraryapi.librarymanagement.rest.dto.toDto
 import com.libraryapi.librarymanagement.rest.dto.toEntity
-import com.libraryapi.librarymanagement.service.FineService
 import com.libraryapi.librarymanagement.service.LoanService
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.GetMapping
@@ -23,8 +20,7 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping("/loans")
 class LoanController(
-    private val loanService: LoanService,
-    private val fineService: FineService
+    private val loanService: LoanService
 ) {
 
     @PostMapping()
@@ -47,10 +43,5 @@ class LoanController(
     @PutMapping("/{id}/devolution")
     fun devLoan(@PathVariable id: String): LoanDto {
         return loanService.devLoan(convertLoanId(id))!!.toDto()
-    }
-
-    @GetMapping("/fines/{id}")
-    fun getByFineById(@PathVariable userId: String): List<Fine> {
-        return fineService.getById(convertFineId(userId))
     }
 }

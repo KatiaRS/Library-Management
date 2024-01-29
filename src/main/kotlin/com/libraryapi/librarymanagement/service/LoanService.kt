@@ -5,6 +5,7 @@ import com.libraryapi.librarymanagement.domain.Loan
 import com.libraryapi.librarymanagement.exception.BookAlreadyBeenReturnedException
 import com.libraryapi.librarymanagement.exception.LoanNotFoundException
 import com.libraryapi.librarymanagement.exception.NoCopiesAvailableException
+import com.libraryapi.librarymanagement.exception.UserHaveFineException
 import com.libraryapi.librarymanagement.exception.UserReachedLoanLimitException
 import com.libraryapi.librarymanagement.repository.CopyRepository
 import com.libraryapi.librarymanagement.repository.LoanRepository
@@ -19,7 +20,6 @@ class LoanService(
     private val userService: UserService,
     private val copyRepository: CopyRepository,
     private val loanRepository: LoanRepository,
-    private val bookService: BookService,
     private val fineService: FineService
 ) {
     fun create(loan: Loan): Loan {
@@ -30,6 +30,9 @@ class LoanService(
             throw UserReachedLoanLimitException()
         }
 
+        if (fineService.userHasOpenFine(loan.user.id!!)) {
+            throw UserHaveFineException()
+        }
         return loanRepository.save(loan)
     }
 
@@ -47,22 +50,19 @@ class LoanService(
         loan.returnDate = LocalDate.now()
         return loanRepository.save(loan).also {
             if (it.returnDate!!.isAfter(it.dueDate)) {
-                fineService.createFine(it)
+                it.apply {
+                    fine = fineService.createFine(it)
+                }
             }
         }
     }
 
     private fun canBorrowMoreBooks(userId: UUID): Boolean {
-        // Logica para verificar se o usuário poderá emprestar mais livros
-        // se tem mais de 5 empréstimos
-
         val activeLoans = loanRepository.countByUserIdAndReturnDateIsNull(userId)
         return activeLoans < MAX_LOANS_PER_USER
     }
 
     private fun getCopyAvailable(bookId: UUID): Copy {
-        // logica para verificar se há livros disponíveis para empréstimo
-
         val copies = copyRepository.findAvailableCopies(bookId)
 
         if (copies.isEmpty()) {

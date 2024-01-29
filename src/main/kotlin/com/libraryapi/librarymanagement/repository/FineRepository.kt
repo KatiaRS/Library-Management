@@ -6,4 +6,9 @@ import org.springframework.stereotype.Repository
 import java.util.UUID
 
 @Repository
-interface FineRepository : JpaRepository<Fine, UUID>
+interface FineRepository : JpaRepository<Fine, UUID> {
+
+    fun findByLoanUserId(userId: UUID): List<Fine>
+
+    fun existsByLoanUserIdAndPaidDateIsNull(userId: UUID): Boolean
+}

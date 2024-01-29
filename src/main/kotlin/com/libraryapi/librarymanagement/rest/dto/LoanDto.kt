@@ -10,7 +10,6 @@ import java.time.LocalDate
 import java.util.*
 
 const val LOAN_PREFIX = "LOAN_"
-const val FINE_PREFIX = "FINE_"
 
 data class LoanDto(
     var id: String? = null,
@@ -36,10 +35,10 @@ fun Loan.toDto(): LoanDto = LoanDto(
     id = addLoanPrefix(id!!),
     userId = addUserPrefix(user.id!!),
     bookId = addBookPrefix(copy.book.id!!),
-    issuedDate = this.issuedDate,
+    issuedDate = this.issueDate,
     dueDate = this.dueDate,
-    returnDate = this.returnDate
-//    fine = addFinePrefix(fine?.id!!)
+    returnDate = this.returnDate,
+    fine = this.fine?.let { addFinePrefix(it.id!!) }
 
 )
 fun convertLoanId(id: String): UUID {
@@ -61,4 +60,3 @@ fun convertFineId(id: String): UUID {
 }
 
 fun addLoanPrefix(id: UUID) = "$LOAN_PREFIX$id"
-fun addFinePrefix(id: UUID) = "$FINE_PREFIX$id"

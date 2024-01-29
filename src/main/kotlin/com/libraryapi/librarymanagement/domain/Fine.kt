@@ -24,6 +24,10 @@ data class Fine(
 
     var paidDate: LocalDate? = null,
 
-    val amount: BigDecimal? = null
+    var amount: BigDecimal = BigDecimal.ZERO
 
-)
+) {
+    fun isPaid(): Boolean {
+        return paidDate != null
+    }
+}
