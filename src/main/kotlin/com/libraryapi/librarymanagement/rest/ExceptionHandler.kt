@@ -1,11 +1,9 @@
 package com.libraryapi.librarymanagement.rest
 
-import com.libraryapi.librarymanagement.exception.BookAlreadyExistsException
-import com.libraryapi.librarymanagement.exception.BookNotFoundException
-import com.libraryapi.librarymanagement.exception.ConversionIdException
-import com.libraryapi.librarymanagement.exception.DocumentCannotBeChangedException
+import com.libraryapi.librarymanagement.exception.BusinessException
+import com.libraryapi.librarymanagement.exception.EntityNotFoundException
 import com.libraryapi.librarymanagement.exception.UserAlreadyExistsException
-import com.libraryapi.librarymanagement.exception.UserNotFoundException
+import com.libraryapi.librarymanagement.exception.ValidationException
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -22,34 +20,24 @@ class ExceptionHandler : ResponseEntityExceptionHandler() {
         return handleExceptionInternal(e, HttpStatus.INTERNAL_SERVER_ERROR, request)
     }
 
-    @ExceptionHandler(BookNotFoundException::class)
-    fun handleBookNotFoundException(e: BookNotFoundException, request: WebRequest): ResponseEntity<Any>? {
+    @ExceptionHandler(EntityNotFoundException::class)
+    fun handleEntityNotFoundException(e: EntityNotFoundException, request: WebRequest): ResponseEntity<Any>? {
         return handleExceptionInternal(e, HttpStatus.NOT_FOUND, request)
     }
 
-    @ExceptionHandler(BookAlreadyExistsException::class)
-    fun handleBookAlreadyExistsException(e: BookAlreadyExistsException, request: WebRequest): ResponseEntity<Any>? {
+    @ExceptionHandler(BusinessException::class)
+    fun handleBusinessException(e: BusinessException, request: WebRequest): ResponseEntity<Any>? {
         return handleExceptionInternal(e, HttpStatus.BAD_REQUEST, request)
     }
 
-    @ExceptionHandler(ConversionIdException::class)
-    fun handleConversionIdException(e: ConversionIdException, request: WebRequest): ResponseEntity<Any>? {
+    @ExceptionHandler(ValidationException::class)
+    fun handleValidationException(e: ValidationException, request: WebRequest): ResponseEntity<Any>? {
         return handleExceptionInternal(e, HttpStatus.BAD_REQUEST, request)
     }
 
     @ExceptionHandler(UserAlreadyExistsException::class)
     fun handleUserAlreadyExistsException(e: UserAlreadyExistsException, request: WebRequest): ResponseEntity<Any>? {
         return handleExceptionInternal(e, HttpStatus.CONFLICT, request)
-    }
-
-    @ExceptionHandler(UserNotFoundException::class)
-    fun handleUserNotFoundException(e: UserNotFoundException, request: WebRequest): ResponseEntity<Any>? {
-        return handleExceptionInternal(e, HttpStatus.NOT_FOUND, request)
-    }
-
-    @ExceptionHandler(DocumentCannotBeChangedException::class)
-    fun handleDocumentCannotBeChangedException(e: DocumentCannotBeChangedException, request: WebRequest): ResponseEntity<Any>? {
-        return handleExceptionInternal(e, HttpStatus.BAD_REQUEST, request)
     }
 
     private fun handleExceptionInternal(ex: Exception, status: HttpStatus, request: WebRequest): ResponseEntity<Any>? {

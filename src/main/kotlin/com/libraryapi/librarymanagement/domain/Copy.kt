@@ -15,7 +15,7 @@ data class Copy(
     @GeneratedValue(strategy = GenerationType.AUTO)
     val id: Long? = null,
 
-    @ManyToOne
+    @ManyToOne()
     @JoinColumn(name = "book_id")
     val book: Book = Book()
 

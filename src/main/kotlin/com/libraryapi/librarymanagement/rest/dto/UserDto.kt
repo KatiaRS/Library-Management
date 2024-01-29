@@ -1,9 +1,11 @@
 package com.libraryapi.librarymanagement.rest.dto
 
 import com.libraryapi.librarymanagement.domain.User
+import com.libraryapi.librarymanagement.exception.ConversionIdException
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.Size
 import org.hibernate.validator.constraints.br.CPF
+import java.util.*
 
 const val USER_PREFIX = "USER_"
 data class UserDto(
@@ -30,8 +32,18 @@ fun UserDto.toEntity(): User = User(
 
 )
 fun User.toDto(): UserDto = UserDto(
-    id = "$USER_PREFIX$id",
+    id = addUserPrefix(id!!),
     firstName = this.firstName,
     lastName = this.lastName,
     document = this.document
 )
+fun convertUserId(id: String): UUID {
+    val noPrefix = id.removePrefix(USER_PREFIX)
+    try {
+        return UUID.fromString(noPrefix)
+    } catch (e: Exception) {
+        throw ConversionIdException()
+    }
+}
+
+fun addUserPrefix(id: UUID) = "$USER_PREFIX$id"

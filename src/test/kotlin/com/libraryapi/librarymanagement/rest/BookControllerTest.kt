@@ -44,20 +44,14 @@ class BookControllerTest {
     private lateinit var objectMapper: ObjectMapper
 
     @BeforeEach
+    @AfterEach
     fun setup() {
         copyRepository.deleteAll()
-        bookRepository.deleteAll() // limpa o banco de dados cada vez q for rodar
-    }
-
-    @AfterEach
-    fun tearDown() {
-        copyRepository.deleteAll()
-        bookRepository.deleteAll() // limpa o banco de dados quando finaliza o teste
+        bookRepository.deleteAll()
     }
 
     @Test
     fun `should create book`() {
-        // dado quando eu crio um book
         val request: BookDto = builderBookDto()
 
         mockMvc.post(URL) {
@@ -76,7 +70,6 @@ class BookControllerTest {
 
     @Test
     fun `should find a list of books`() {
-        // Dado dois livros existentes
         val book1: Book = bookRepository.save(
             Book(
                 id = null,
@@ -498,7 +491,7 @@ class BookControllerTest {
         val invalidId: UUID = UUID.randomUUID()
         val bookUpdateDto: BookDto = builderBookUpdateDto()
 
-        // Quando eu faço um get
+        // Quando eu faço um put
         mockMvc.put("$URL/$invalidId") {
             contentType = MediaType.APPLICATION_JSON
             content = objectMapper.writeValueAsString(bookUpdateDto)
@@ -586,18 +579,19 @@ class BookControllerTest {
     }
 }
 
-private fun builderBookDto(
+fun builderBookDto(
+    id: String? = null,
     title: String? = "A Lua",
     author: String? = "Katia Santana",
     isbn: String? = "123345678962"
 ) = BookDto(
-    id = null,
+    id = id,
     title = title,
     isbn = isbn,
     author = author
 )
 
-private fun builderBookUpdateDto(
+fun builderBookUpdateDto(
     title: String? = "Legião Urbana",
     author: String? = "Renato Russo",
     isbn: String? = "123345678963"

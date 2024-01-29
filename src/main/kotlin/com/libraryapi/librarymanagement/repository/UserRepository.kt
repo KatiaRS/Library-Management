@@ -7,7 +7,7 @@ import java.util.UUID
 @Repository
 interface UserRepository : JpaRepository<User, UUID> {
 
-    fun findByDocument(document: String): User?
+    fun findByDocument(document: String): User
 
     fun existsByDocument(document: String): Boolean
 }
