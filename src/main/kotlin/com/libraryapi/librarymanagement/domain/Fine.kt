@@ -1,5 +1,6 @@
 package com.libraryapi.librarymanagement.domain
 
+import jakarta.persistence.Embedded
 import jakarta.persistence.Entity
 import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
@@ -24,7 +25,10 @@ data class Fine(
 
     var paidDate: LocalDate? = null,
 
-    var amount: BigDecimal = BigDecimal.ZERO
+    var amount: BigDecimal = BigDecimal.ZERO,
+
+    @Embedded
+    val checkout: Checkout
 
 ) {
     fun isPaid(): Boolean {

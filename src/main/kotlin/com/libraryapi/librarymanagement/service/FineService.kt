@@ -13,7 +13,8 @@ import java.util.*
 
 @Service
 data class FineService(
-    val fineRepository: FineRepository
+    val fineRepository: FineRepository,
+    val checkoutService: CheckoutService
 ) {
     fun createFine(loan: Loan): Fine {
         val fineAmountPerDay = BigDecimal(2.99)
@@ -22,8 +23,12 @@ data class FineService(
 
         val fine = Fine(
             loan = loan,
-            amount = totalAmountOfTheFine
+            amount = totalAmountOfTheFine,
+            checkout = checkoutService.createCheckout(
+                description = "Multa pelo atraso do empréstimo do livro: ${loan.copy.book.title} ",
+                value = totalAmountOfTheFine
 
+            )
         )
         return fineRepository.save(fine)
     }
