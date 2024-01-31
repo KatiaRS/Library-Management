@@ -300,8 +300,6 @@ class LoanControllerTest {
 
     @Test
     fun `should return 400 if the user does not exist`() {
-        val userInvalid = builderLoanDto()
-
         mockMvc.post(URL) {
             contentType = MediaType.APPLICATION_JSON
         }.andExpect {
@@ -316,8 +314,6 @@ class LoanControllerTest {
 
     @Test
     fun `should return 400 if the book does not exist`() {
-        val bookInvalid = builderLoanDto()
-
         mockMvc.post(URL) {
             contentType = MediaType.APPLICATION_JSON
         }.andExpect {
