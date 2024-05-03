@@ -5,6 +5,7 @@ import com.libraryapi.librarymanagement.domain.Loan
 import com.libraryapi.librarymanagement.exception.BookAlreadyBeenReturnedException
 import com.libraryapi.librarymanagement.exception.LoanNotFoundException
 import com.libraryapi.librarymanagement.exception.NoCopiesAvailableException
+import com.libraryapi.librarymanagement.exception.UserHaveFineException
 import com.libraryapi.librarymanagement.exception.UserReachedLoanLimitException
 import com.libraryapi.librarymanagement.repository.CopyRepository
 import com.libraryapi.librarymanagement.repository.LoanRepository
@@ -19,7 +20,7 @@ class LoanService(
     private val userService: UserService,
     private val copyRepository: CopyRepository,
     private val loanRepository: LoanRepository,
-    private val bookService: BookService
+    private val fineService: FineService
 ) {
     fun create(loan: Loan): Loan {
         loan.user = userService.getById(loan.user.id!!)
@@ -29,6 +30,9 @@ class LoanService(
             throw UserReachedLoanLimitException()
         }
 
+        if (fineService.userHasOpenFine(loan.user.id!!)) {
+            throw UserHaveFineException()
+        }
         return loanRepository.save(loan)
     }
 
@@ -38,27 +42,27 @@ class LoanService(
         }
     }
 
-    fun devLoan(id: UUID): Loan {
+    fun devLoan(id: UUID): Loan? {
         val loan = getById(id)
         if (loan.returnDate != null) {
             throw BookAlreadyBeenReturnedException()
         }
         loan.returnDate = LocalDate.now()
-        return loanRepository.save(loan)
+        return loanRepository.save(loan).also {
+            if (it.returnDate!!.isAfter(it.dueDate)) {
+                it.apply {
+                    fine = fineService.createFine(it)
+                }
+            }
+        }
     }
 
     private fun canBorrowMoreBooks(userId: UUID): Boolean {
-        // Logica para verificar se o usuário poderá emprestar mais livros
-        // se tem mais de 5 empréstimos
-
         val activeLoans = loanRepository.countByUserIdAndReturnDateIsNull(userId)
         return activeLoans < MAX_LOANS_PER_USER
     }
 
     private fun getCopyAvailable(bookId: UUID): Copy {
-        // logica para verificar se há livros disponíveis para empréstimo
-
-        val book = bookService.getById(bookId)
         val copies = copyRepository.findAvailableCopies(bookId)
 
         if (copies.isEmpty()) {
