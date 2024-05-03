@@ -27,7 +27,7 @@ class UserService(private val userRepository: UserRepository) {
     }
 
     fun getByDocument(document: String): User? {
-        return userRepository.findByDocument(document) ?: throw UserNotFoundException()
+        return userRepository.findByDocument(document)
     }
 
     fun deleteById(id: UUID) {
