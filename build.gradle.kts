@@ -1,12 +1,9 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-import org.jlleitschuh.gradle.ktlint.KtlintExtension
 
 plugins {
-    id("org.springframework.boot") version "3.1.4"
-    id("io.spring.dependency-management") version "1.1.3"
-    id("org.jlleitschuh.gradle.ktlint") version "11.4.2"
     kotlin("jvm") version "1.8.22"
-    kotlin("plugin.spring") version "1.8.22"
+    kotlin("plugin.allopen") version "1.8.22"
+    id("io.quarkus") version "3.5.0"
 }
 
 group = "com.libraryapi"
@@ -18,33 +15,33 @@ java {
 
 repositories {
     mavenCentral()
+    mavenLocal()
 }
 
+val quarkusPlatformGroupId: String by project
+val quarkusPlatformArtifactId: String by project
+val quarkusPlatformVersion: String by project
+
 dependencies {
-    implementation("org.springframework.boot:spring-boot-starter")
+    implementation(enforcedPlatform("${quarkusPlatformGroupId}:${quarkusPlatformArtifactId}:${quarkusPlatformVersion}"))
+    implementation("io.quarkus:quarkus-kotlin")
+    implementation("io.quarkus:quarkus-rest-jackson")
+    implementation("io.quarkus:quarkus-jdbc-mysql")
+    implementation("io.quarkus:quarkus-hibernate-orm-panache-kotlin")
+    implementation("io.quarkus:quarkus-kafka-client")
+    implementation("io.quarkus:quarkus-smallrye-reactive-messaging-kafka")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
-    testImplementation("org.springframework.boot:spring-boot-starter-test")
-    implementation("org.springframework.boot:spring-boot-starter-validation")
-    implementation("org.springframework.boot:spring-boot-starter-web")
-    runtimeOnly("com.h2database:h2")
-    implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+
+    testImplementation("io.quarkus:quarkus-junit5")
+    testImplementation("io.quarkus:quarkus-junit5-mockito")
 }
 
 tasks.withType<KotlinCompile> {
     kotlinOptions {
-        freeCompilerArgs += "-Xjsr305=strict"
         jvmTarget = "17"
     }
-    dependsOn("ktlintFormat")
 }
 
 tasks.withType<Test> {
     useJUnitPlatform()
-}
-
-configure<KtlintExtension> {
-    ignoreFailures.set(true)
-    filter {
-        include("**/kotlin/**")
-    }
 }

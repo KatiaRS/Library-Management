@@ -1,10 +1,39 @@
-spring:
-  h2:
-    console:
-      enabled: true
+quarkus:
+  application:
+    name: library-management
+    version: 0.0.1-SNAPSHOT
+
+  # Banco de dados MySQL
   datasource:
-    url: jdbc:h2:mem:Book
-    driver-class-name: org.h2.Driver
-  jpa:
-    generate-ddl: true
-    show-sql: true
+    db-kind: mysql
+    jdbc:
+      url: jdbc:mysql://localhost:3306/library_db
+      driver: com.mysql.cj.jdbc.Driver
+    username: root
+    password: root
+    min-size: 5
+    max-size: 20
+
+  # Hibernate ORM
+  hibernate-orm:
+    database:
+      generation: validate
+    log:
+      sql: true
+      bind-parameters: true
+
+  # Flyway para migrations
+  flyway:
+    migrate-at-start: true
+    locations: classpath:db/migration
+
+  # REST Jackson
+  rest:
+    response-compression:
+      enabled: true
+
+  # Logs
+  log:
+    level: INFO
+    category:
+      "com.libraryapi": DEBUG
