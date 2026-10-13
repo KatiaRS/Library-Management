@@ -1,3 +1,5 @@
 package application.book.handlers
 
-data class InvalidISBN(val isbn: ISBN): BookException()
+import application.book.domain.models.Isbn
+
+class InvalidISBN(val isbn: Isbn) : BookException("ISBN inválido: ${isbn.value}")
